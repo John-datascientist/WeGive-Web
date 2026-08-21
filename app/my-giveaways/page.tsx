@@ -1,71 +1,65 @@
 import { PortalShell } from "@/components/portal-shell";
 import { ListRow, EmptyState } from "@/components/portal-widgets";
 import { Card, ButtonLink } from "@/components/ui";
-import { PaymentPanel } from "@/components/payment-panel";
-import { FreeDeliveryBadge } from "@/components/free-delivery-badge";
 import { userNav } from "@/lib/portal-nav";
-import { myGiveaways } from "@/lib/mock-data";
-import { formatCurrency } from "@/lib/location";
-import { getSelectedCountry } from "@/lib/location-server";
+import { createClient } from "@/lib/supabase/server";
+import type { Giveaway } from "@/lib/giveaways";
 
 export const metadata = { title: "My giveaways" };
 
 export default async function MyGiveawaysPage() {
-  const country = await getSelectedCountry();
-  const needsPayment = myGiveaways.filter((g) => g.freeDelivery && g.deliveryFeeDue);
-  const rest = myGiveaways.filter((g) => !(g.freeDelivery && g.deliveryFeeDue));
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data } = user
+    ? await supabase
+        .from("giveaways")
+        .select("*")
+        .eq("giver_id", user.id)
+        .neq("status", "REMOVED")
+        .order("created_at", { ascending: false })
+    : { data: null };
+  const giveaways = (data ?? []) as Giveaway[];
+
+  const claimCounts = await Promise.all(
+    giveaways.map((g) =>
+      supabase.from("claims").select("id", { count: "exact", head: true }).eq("giveaway_id", g.id)
+    )
+  );
 
   return (
     <PortalShell
       navItems={userNav}
       portalLabel="Your account"
       title="My giveaways"
-      description="Items you've listed, from draft through to completed."
+      description="Items you've listed, from listing through to completed."
     >
       <div className="flex justify-end">
         <ButtonLink href="/giveaway/create">Create a giveaway</ButtonLink>
       </div>
 
-      {needsPayment.map((g) => (
-        <Card key={g.id} className="flex flex-col gap-4 border-border-strong">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">{g.title}</p>
-              <p className="text-xs text-muted-foreground">
-                Someone claimed this {formatCurrency(g.deliveryFeeDue!, country)}. You committed to cover delivery.
-              </p>
-            </div>
-            <FreeDeliveryBadge />
-          </div>
-          <PaymentPanel
-            amount={g.deliveryFeeDue!}
-            actionLabel="Pay"
-            continueHref="/my-giveaways"
-            continueLabel="Done"
-            country={country}
-          />
-        </Card>
-      ))}
-
-      {rest.length === 0 && needsPayment.length === 0 ? (
+      {giveaways.length === 0 ? (
         <EmptyState
           title="No giveaways yet"
           description="List something you no longer need and it'll show up here."
           action={<ButtonLink href="/giveaway/create">Create a giveaway</ButtonLink>}
         />
       ) : (
-        rest.length > 0 && (
-          <Card>
-            {rest.map((g) => (
+        <Card>
+          {giveaways.map((g, i) => {
+            const claims = claimCounts[i]?.count ?? 0;
+            return (
               <ListRow
                 key={g.id}
                 title={g.title}
-                subtitle={`${g.category} · ${g.claims} claim${g.claims === 1 ? "" : "s"} · updated ${g.updated}`}
-                status={g.status.replace(/_/g, " ")}
+                subtitle={`${g.category} · ${claims} claim${claims === 1 ? "" : "s"} · listed ${new Date(g.created_at).toLocaleDateString()}`}
+                status={g.status}
               />
-            ))}
-          </Card>
-        )
+            );
+          })}
+        </Card>
       )}
     </PortalShell>
   );

@@ -2,21 +2,46 @@ import { PortalShell } from "@/components/portal-shell";
 import { StatCard, ListRow, EmptyState } from "@/components/portal-widgets";
 import { Card, ButtonLink } from "@/components/ui";
 import { userNav } from "@/lib/portal-nav";
-import {
-  canClaimMore,
-  currentUserStanding,
-  myGiveaways,
-  myClaims,
-  myDeliveries,
-} from "@/lib/mock-data";
+import { myDeliveries } from "@/lib/mock-data";
+import { getReciprocityStatus } from "@/lib/giveaways";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Dashboard" };
 
-export default function DashboardPage() {
-  const activeGiveaways = myGiveaways.filter((g) => g.status !== "COMPLETED").length;
-  const openClaims = myClaims.filter((c) => c.status !== "Delivered").length;
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let activeGiveaways = 0;
+  let openClaims = 0;
+  let claimsMade = 0;
+  let givesMade = 0;
+  let claimLocked = false;
+
+  if (user) {
+    const [givesResult, claimsResult, reciprocity] = await Promise.all([
+      supabase
+        .from("giveaways")
+        .select("id", { count: "exact", head: true })
+        .eq("giver_id", user.id)
+        .not("status", "in", "(COMPLETED,REMOVED)"),
+      supabase
+        .from("claims")
+        .select("id", { count: "exact", head: true })
+        .eq("claimant_id", user.id)
+        .eq("status", "RESERVED"),
+      getReciprocityStatus(supabase, user.id),
+    ]);
+    activeGiveaways = givesResult.count ?? 0;
+    openClaims = claimsResult.count ?? 0;
+    claimsMade = reciprocity.claimsMade;
+    givesMade = reciprocity.givesMade;
+    claimLocked = !reciprocity.canClaimMore;
+  }
+
   const deliveriesInProgress = myDeliveries.filter((d) => d.status !== "Delivered").length;
-  const claimLocked = !canClaimMore();
 
   return (
     <PortalShell
@@ -38,7 +63,7 @@ export default function DashboardPage() {
               {claimLocked ? "🔒 Give once to claim again" : "You're clear to claim"}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              {currentUserStanding.claimsMade} claim{currentUserStanding.claimsMade === 1 ? "" : "s"} made, {currentUserStanding.givesMade} giveaway{currentUserStanding.givesMade === 1 ? "" : "s"} listed.{" "}
+              {claimsMade} claim{claimsMade === 1 ? "" : "s"} made, {givesMade} giveaway{givesMade === 1 ? "" : "s"} listed.{" "}
               {claimLocked
                 ? "List something you no longer need to unlock your next claim."
                 : "Keep giving and claiming in balance."}

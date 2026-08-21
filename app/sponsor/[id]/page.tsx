@@ -2,13 +2,10 @@ import { notFound } from "next/navigation";
 import { Card, Eyebrow } from "@/components/ui";
 import { BackButton } from "@/components/back-button";
 import { PaymentPanel } from "@/components/payment-panel";
-import {
-  estimateDeliveryFee,
-  nearbyGiveaways,
-  openSponsorships,
-} from "@/lib/mock-data";
+import { estimateDeliveryFee, openSponsorships } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/location";
 import { getSelectedCountry } from "@/lib/location-server";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function SponsorCheckoutPage({
   params,
@@ -16,17 +13,28 @@ export default async function SponsorCheckoutPage({
   const { id } = await params;
   const country = await getSelectedCountry();
   const listed = openSponsorships.find((s) => s.id === id);
-  const giveaway = !listed ? nearbyGiveaways.find((g) => g.id === id) : undefined;
+
+  let giveaway: { title: string; return_city: string; return_region: string } | null = null;
+  if (!listed) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("giveaways")
+      .select("title, return_city, return_region")
+      .eq("id", id)
+      .maybeSingle();
+    giveaway = data;
+  }
 
   if (!listed && !giveaway) notFound();
 
   // Anyone can be first to help: a giveaway with no sponsorship yet just
-  // starts at ₦0 funded against its estimated, distance-based fee.
+  // starts at ₦0 funded against an estimated fee (real distance-based
+  // pricing isn't wired up yet, so this uses a placeholder distance).
   const sponsorship = listed ?? {
-    id: giveaway!.id,
+    id,
     itemTitle: giveaway!.title,
-    recipientArea: giveaway!.location,
-    totalFee: estimateDeliveryFee(giveaway!.distanceKm),
+    recipientArea: `${giveaway!.return_city}, ${giveaway!.return_region}`,
+    totalFee: estimateDeliveryFee(5),
     fundedAmount: 0,
   };
 

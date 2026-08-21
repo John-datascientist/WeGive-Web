@@ -27,6 +27,9 @@ export function CreateGiveawayForm({ country }: { country: CountryCode }) {
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [profileAddress, setProfileAddress] = useState<ProfileAddress | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const photoPreviews = useMemo(() => photos.map((file) => URL.createObjectURL(file)), [photos]);
@@ -38,6 +41,7 @@ export function CreateGiveawayForm({ country }: { country: CountryCode }) {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id ?? null);
       const meta = user?.user_metadata as Record<string, string | undefined> | undefined;
       if (meta?.address_line1 && meta?.city && meta?.region && meta?.postcode) {
         setProfileAddress({
@@ -71,12 +75,11 @@ export function CreateGiveawayForm({ country }: { country: CountryCode }) {
         <Card className="w-full max-w-lg border-border-strong bg-brand-light/60 text-center">
           <p className="text-3xl">📬</p>
           <h1 className="mt-3 text-2xl font-black uppercase tracking-tight text-ink">
-            Submitted for review
+            Your giveaway is live
           </h1>
           <p className="mt-2 text-sm leading-6 text-ink/80">
-            Once approved, your listing goes live and nearby members who
-            match this category are notified right away, by in-app
-            notification and email.
+            It&apos;s visible on Browse right away. Nearby members who match
+            this category will be notified once notifications are wired up.
           </p>
           <ButtonLink href="/my-giveaways" variant="primary" className="mt-6 w-full">
             Go to my giveaways
@@ -103,12 +106,54 @@ export function CreateGiveawayForm({ country }: { country: CountryCode }) {
       <Card className="max-w-2xl">
         <form
           className="flex flex-col gap-5"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (photos.length === 0) {
               setPhotoError("Add at least 1 photo of the item.");
               return;
             }
+            if (!userId) {
+              setSubmitError("You must be signed in to list a giveaway.");
+              return;
+            }
+
+            const form = new FormData(e.currentTarget);
+            const categoryFieldValues: Record<string, string> = {};
+            for (const field of categoryFields[category]) {
+              const value = form.get(field);
+              if (typeof value === "string" && value.trim().length > 0) {
+                categoryFieldValues[field] = value.trim();
+              }
+            }
+
+            setSubmitError(null);
+            setSubmitting(true);
+
+            const supabase = createClient();
+            const { error } = await supabase.from("giveaways").insert({
+              giver_id: userId,
+              title: String(form.get("item-name") ?? ""),
+              category,
+              subcategory,
+              condition: String(form.get("condition") ?? ""),
+              category_fields: categoryFieldValues,
+              covers_delivery: coversDelivery === true,
+              return_line1: String(form.get("return-line1") ?? ""),
+              return_line2: String(form.get("return-line2") ?? "") || null,
+              return_city: String(form.get("return-city") ?? ""),
+              return_region: String(form.get("return-region") ?? ""),
+              return_postcode: String(form.get("return-postcode") ?? ""),
+              country,
+              status: "AVAILABLE",
+            });
+
+            setSubmitting(false);
+
+            if (error) {
+              setSubmitError(error.message);
+              return;
+            }
+
             setSubmitted(true);
           }}
         >
@@ -271,16 +316,19 @@ export function CreateGiveawayForm({ country }: { country: CountryCode }) {
             )}
           </div>
 
+          {submitError && (
+            <p className="border border-warn bg-warn-light px-3 py-2.5 text-sm text-warn">{submitError}</p>
+          )}
           <button
             type="submit"
-            className="label-caps mt-2 self-start border border-ink bg-ink px-5 py-3.5 text-xs font-semibold text-surface transition-colors hover:bg-transparent hover:text-ink"
+            disabled={submitting}
+            className="label-caps mt-2 self-start border border-ink bg-ink px-5 py-3.5 text-xs font-semibold text-surface transition-colors hover:bg-transparent hover:text-ink disabled:opacity-60"
           >
-            Submit for review
+            {submitting ? "Listing…" : "List this giveaway"}
           </button>
           <p className="text-xs text-muted-foreground">
-            Your listing goes to PENDING_REVIEW. Once approved, it appears
-            publicly and nearby members are notified by in-app and email
-            notification.
+            Your listing appears on Browse immediately. Notifying nearby
+            members by in-app and email isn&apos;t wired up yet.
           </p>
         </form>
       </Card>

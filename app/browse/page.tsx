@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ButtonLink, Card, Eyebrow } from "@/components/ui";
 import { FreeDeliveryBadge } from "@/components/free-delivery-badge";
-import { canClaimMore, nearbyGiveaways } from "@/lib/mock-data";
 import { categories, subcategories, type Category } from "@/lib/categories";
 import { countries } from "@/lib/location";
 import { getSelectedCountry } from "@/lib/location-server";
 import { createClient } from "@/lib/supabase/server";
+import { categoryEmoji, getReciprocityStatus, type Giveaway } from "@/lib/giveaways";
 
 export const metadata = { title: "Browse giveaways" };
 
@@ -27,8 +27,6 @@ export default async function BrowsePage({
     ? rawSub
     : undefined;
 
-  const claimLocked = !canClaimMore();
-
   const country = await getSelectedCountry();
   const supabase = await createClient();
   const {
@@ -37,18 +35,20 @@ export default async function BrowsePage({
   const meta = user?.user_metadata as Record<string, string | undefined> | undefined;
   const isNigerianResident = country === "NG" && !!meta?.region;
 
-  // The demo catalog is Nigeria-only for now, so other countries see an
-  // honest "not live here yet" state instead of irrelevant NG listings.
-  const availableInCountry = country === "NG";
+  const claimLocked = user ? !(await getReciprocityStatus(supabase, user.id)).canClaimMore : false;
 
-  const items = availableInCountry
-    ? nearbyGiveaways.filter((item) => {
-        if (selectedCategory && item.category !== selectedCategory) return false;
-        if (selectedSub && item.subcategory !== selectedSub) return false;
-        if (isNigerianResident && item.state.toLowerCase() !== meta!.region!.trim().toLowerCase()) return false;
-        return true;
-      })
-    : [];
+  let query = supabase
+    .from("giveaways")
+    .select("*")
+    .eq("status", "AVAILABLE")
+    .eq("country", country)
+    .order("created_at", { ascending: false });
+  if (selectedCategory) query = query.eq("category", selectedCategory);
+  if (selectedSub) query = query.eq("subcategory", selectedSub);
+  if (isNigerianResident) query = query.ilike("return_region", meta!.region!.trim());
+
+  const { data: giveaways } = await query;
+  const items = (giveaways ?? []) as Giveaway[];
 
   return (
     <div className="container-page flex flex-col gap-8 py-14 sm:py-20">
@@ -58,11 +58,9 @@ export default async function BrowsePage({
           Find something you need
         </h1>
         <p className="text-base leading-7 text-muted-foreground">
-          {!availableInCountry
-            ? `WeGive is still expanding to ${countries[country].name}. Check back soon, or be the first to list something.`
-            : isNigerianResident
-              ? `Showing giveaways in ${meta!.region}. Exact pickup addresses are only shared once a claim is confirmed.`
-              : "Showing giveaways near your home postcode. Exact pickup addresses are only shared once a claim is confirmed."}
+          {isNigerianResident
+            ? `Showing giveaways in ${meta!.region}. Exact pickup addresses are only shared once a claim is confirmed.`
+            : `Showing giveaways in ${countries[country].name}. Exact pickup addresses are only shared once a claim is confirmed.`}
         </p>
       </div>
 
@@ -134,17 +132,13 @@ export default async function BrowsePage({
         <Card className="flex flex-col items-start gap-3 border-dashed">
           <p className="text-sm font-semibold text-foreground">Nothing here yet</p>
           <p className="text-sm text-muted-foreground">
-            {!availableInCountry
-              ? `There are no listings in ${countries[country].name} yet. Be the first to give something away here.`
-              : isNigerianResident
-                ? `No giveaways in ${meta!.region} match this category right now. Try a different one, or check back soon.`
-                : "No giveaways match this category right now. Try a different one, or check back soon."}
+            {isNigerianResident
+              ? `No giveaways in ${meta!.region} match this category right now. Try a different one, or be the first to list something.`
+              : `No giveaways in ${countries[country].name} match this category right now. Try a different one, or be the first to list something.`}
           </p>
-          {!availableInCountry && (
-            <ButtonLink href="/giveaway/create" variant="primary">
-              List a giveaway
-            </ButtonLink>
-          )}
+          <ButtonLink href="/giveaway/create" variant="primary">
+            List a giveaway
+          </ButtonLink>
         </Card>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -152,14 +146,14 @@ export default async function BrowsePage({
             <Link key={item.id} href={`/giveaway/${item.id}`}>
               <Card className="flex h-full flex-col gap-3 transition-shadow hover:shadow-md">
                 <div className="flex h-28 items-center justify-center bg-brand-light text-4xl">
-                  {item.emoji}
+                  {categoryEmoji[item.category]}
                 </div>
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold uppercase tracking-wide text-brand">
                       {item.category} · {item.subcategory}
                     </span>
-                    {item.freeDelivery && <FreeDeliveryBadge />}
+                    {item.covers_delivery && <FreeDeliveryBadge />}
                   </div>
                   <h3 className="mt-1 text-base font-semibold text-foreground">
                     {item.title}
@@ -167,7 +161,7 @@ export default async function BrowsePage({
                 </div>
                 <p className="text-sm text-muted-foreground">{item.condition}</p>
                 <p className="mt-auto text-sm text-foreground/70">
-                  {item.location} · Approximately {item.distanceKm} km away
+                  {item.return_city}, {item.return_region}
                 </p>
               </Card>
             </Link>

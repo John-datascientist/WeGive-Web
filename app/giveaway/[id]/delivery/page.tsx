@@ -3,7 +3,6 @@ import { BackButton } from "@/components/back-button";
 import { PaymentPanel } from "@/components/payment-panel";
 import { ShareSponsorLink } from "@/components/share-sponsor-link";
 import { AddressFields, type ProfileAddress } from "@/components/address-fields";
-import { nearbyGiveaways } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/location";
 import { getSelectedCountry } from "@/lib/location-server";
 import { createClient } from "@/lib/supabase/server";
@@ -21,9 +20,13 @@ export default async function GiveawayDeliveryPage({
 }: PageProps<"/giveaway/[id]/delivery">) {
   const { id } = await params;
   const country = await getSelectedCountry();
-  const item = nearbyGiveaways.find((g) => g.id === id);
-
   const supabase = await createClient();
+  const { data: item } = await supabase
+    .from("giveaways")
+    .select("covers_delivery")
+    .eq("id", id)
+    .maybeSingle();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -68,7 +71,7 @@ export default async function GiveawayDeliveryPage({
                 <span className="font-medium text-foreground">{formatCurrency(row.value, country)}</span>
               </div>
             ))}
-            {item?.freeDelivery ? (
+            {item?.covers_delivery ? (
               <div className="flex items-center justify-between border-t border-border-strong pt-3 text-base font-semibold">
                 <span className="text-foreground">Total</span>
                 <span className="text-ink">{formatCurrency(total, country)}</span>
@@ -104,7 +107,7 @@ export default async function GiveawayDeliveryPage({
           />
         </div>
 
-        {item?.freeDelivery ? (
+        {item?.covers_delivery ? (
           <div className="mt-6 border border-border-strong bg-brand-light/60 p-6 text-center">
             <p className="text-3xl">🚚</p>
             <p className="mt-3 text-sm font-semibold text-ink">

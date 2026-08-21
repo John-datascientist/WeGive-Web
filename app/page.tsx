@@ -4,12 +4,11 @@ import { HeroScene } from "@/components/hero-scene";
 import { Marquee } from "@/components/marquee";
 import { PeopleGroup } from "@/components/people-group";
 import { FreeDeliveryBadge } from "@/components/free-delivery-badge";
-import {
-  nearbyGiveaways,
-  openSponsorships,
-} from "@/lib/mock-data";
+import { openSponsorships } from "@/lib/mock-data";
 import { countries, formatCurrency } from "@/lib/location";
 import { getSelectedCountry } from "@/lib/location-server";
+import { createClient } from "@/lib/supabase/server";
+import { categoryEmoji, type Giveaway } from "@/lib/giveaways";
 
 const steps = [
   {
@@ -48,6 +47,15 @@ const categories = [
 
 export default async function Home() {
   const country = await getSelectedCountry();
+  const supabase = await createClient();
+  const { data: recentGiveaways } = await supabase
+    .from("giveaways")
+    .select("*")
+    .eq("status", "AVAILABLE")
+    .eq("country", country)
+    .order("created_at", { ascending: false })
+    .limit(8);
+  const nearbyItems = (recentGiveaways ?? []) as Giveaway[];
   return (
     <div className="flex flex-col">
       {/* Hero */}
@@ -146,27 +154,23 @@ export default async function Home() {
           <SectionHeading
             eyebrow="Nearby"
             title="Giveaways Near You"
-            description={
-              country === "NG"
-                ? "Based on your home postcode. Sign in and set your location to see items close to you."
-                : `WeGive is still expanding to ${countries[country].name}. Be the first to list something.`
-            }
+            description={`Recently listed in ${countries[country].name}. Sign in and set your location to see items close to you.`}
             action={{ href: "/browse", label: "See more" }}
           />
-          {country === "NG" ? (
+          {nearbyItems.length > 0 ? (
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {nearbyGiveaways.map((item) => (
+              {nearbyItems.map((item) => (
                 <Link key={item.id} href={`/giveaway/${item.id}`}>
                   <Card className="flex h-full flex-col gap-3 bg-surface transition-colors hover:border-ink">
                     <div className="flex h-28 items-center justify-center bg-brand-light text-4xl">
-                      {item.emoji}
+                      {categoryEmoji[item.category]}
                     </div>
                     <div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="label-caps text-[11px] font-semibold text-muted-foreground">
                           {item.category}
                         </span>
-                        {item.freeDelivery && <FreeDeliveryBadge />}
+                        {item.covers_delivery && <FreeDeliveryBadge />}
                       </div>
                       <h3 className="mt-1 text-base font-bold text-foreground">
                         {item.title}
@@ -176,7 +180,7 @@ export default async function Home() {
                       {item.condition}
                     </p>
                     <p className="mt-auto border-t border-border pt-3 text-sm text-foreground/70">
-                      {item.location} · ~{item.distanceKm} km away
+                      {item.return_city}, {item.return_region}
                     </p>
                   </Card>
                 </Link>

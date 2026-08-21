@@ -1,38 +1,31 @@
+import { notFound } from "next/navigation";
 import { Card, Eyebrow, ButtonLink } from "@/components/ui";
 import { BackButton } from "@/components/back-button";
 import { FreeDeliveryBadge } from "@/components/free-delivery-badge";
 import { ShareSponsorLink } from "@/components/share-sponsor-link";
-import { canClaimMore, nearbyGiveaways } from "@/lib/mock-data";
+import { categoryEmoji, getReciprocityStatus, type Giveaway } from "@/lib/giveaways";
+import { createClient } from "@/lib/supabase/server";
 
-const lifecycle = [
-  "DRAFT",
-  "PENDING_REVIEW",
-  "APPROVED",
-  "AVAILABLE",
-  "RESERVED",
-  "CLAIMED",
-  "DELIVERY_PENDING",
-  "DELIVERED",
-  "COMPLETED",
-];
+const lifecycle = ["AVAILABLE", "RESERVED", "CLAIMED", "COMPLETED"];
 
 export default async function GiveawayDetailPage({
   params,
 }: PageProps<"/giveaway/[id]">) {
   const { id } = await params;
-  const item = nearbyGiveaways.find((g) => g.id === id) ?? {
-    id,
-    title: "Giveaway item",
-    category: "General",
-    subcategory: "",
-    location: "Nearby",
-    state: "",
-    country: "NG" as const,
-    distanceKm: 3.0,
-    condition: "Good condition",
-    emoji: "🎁",
-    freeDelivery: false,
-  };
+  const supabase = await createClient();
+  const { data: item } = await supabase
+    .from("giveaways")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle<Giveaway>();
+
+  if (!item || item.status === "REMOVED") notFound();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isOwner = user?.id === item.giver_id;
+  const canClaim = user ? (await getReciprocityStatus(supabase, user.id)).canClaimMore : true;
 
   return (
     <div className="container-page py-14 sm:py-20">
@@ -40,18 +33,18 @@ export default async function GiveawayDetailPage({
       <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
       <div className="flex flex-col gap-6">
         <div className="flex h-72 items-center justify-center bg-brand-light text-7xl">
-          {item.emoji}
+          {categoryEmoji[item.category]}
         </div>
         <div>
           <div className="flex items-center gap-3">
             <Eyebrow>{item.category}</Eyebrow>
-            {item.freeDelivery && <FreeDeliveryBadge />}
+            {item.covers_delivery && <FreeDeliveryBadge />}
           </div>
           <h1 className="mt-3 text-4xl font-black uppercase leading-[0.95] tracking-tight text-foreground">
             {item.title}
           </h1>
           <p className="mt-2 text-sm text-foreground/70">
-            {item.location} · Approximately {item.distanceKm} km away
+            {item.return_city}, {item.return_region}
           </p>
         </div>
         <Card>
@@ -63,18 +56,18 @@ export default async function GiveawayDetailPage({
             </div>
             <div>
               <dt className="text-muted-foreground">Status</dt>
-              <dd className="text-foreground">Available</dd>
+              <dd className="text-foreground">{item.status}</dd>
             </div>
           </dl>
         </Card>
         <Card>
           <h3 className="text-sm font-semibold text-foreground">Lifecycle</h3>
           <div className="mt-3 flex flex-wrap gap-2">
-            {lifecycle.map((stage, i) => (
+            {lifecycle.map((stage) => (
               <span
                 key={stage}
                 className={`label-caps border px-3 py-1 text-[11px] font-semibold ${
-                  i === 3
+                  stage === item.status
                     ? "border-ink bg-ink text-surface"
                     : "border-border bg-surface-muted text-muted-foreground"
                 }`}
@@ -87,7 +80,24 @@ export default async function GiveawayDetailPage({
       </div>
 
       <div className="flex flex-col gap-4">
-        {canClaimMore() ? (
+        {isOwner ? (
+          <Card className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold text-foreground">This is your listing</h3>
+            <p className="text-sm text-muted-foreground">
+              You can&apos;t claim your own giveaway. Manage it from My giveaways.
+            </p>
+            <ButtonLink href="/my-giveaways" variant="secondary">
+              Go to my giveaways
+            </ButtonLink>
+          </Card>
+        ) : item.status !== "AVAILABLE" ? (
+          <Card className="flex flex-col gap-2 border-border-strong bg-surface-muted">
+            <h3 className="text-sm font-semibold text-foreground">No longer available</h3>
+            <p className="text-sm text-muted-foreground">
+              This item has already been claimed by someone else.
+            </p>
+          </Card>
+        ) : canClaim ? (
           <Card className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold text-foreground">
               Interested in this item?
@@ -100,7 +110,7 @@ export default async function GiveawayDetailPage({
             <ButtonLink href={`/giveaway/${item.id}/claim`} variant="primary">
               Claim this item
             </ButtonLink>
-            {item.freeDelivery && (
+            {item.covers_delivery && (
               <p className="label-caps text-center text-[11px] font-semibold text-accent-dark">
                 🚚 The giver is covering delivery: free for whoever claims this.
               </p>
@@ -121,7 +131,7 @@ export default async function GiveawayDetailPage({
             </ButtonLink>
           </Card>
         )}
-        {!item.freeDelivery && <ShareSponsorLink giveawayId={item.id} />}
+        {!item.covers_delivery && <ShareSponsorLink giveawayId={item.id} />}
       </div>
       </div>
     </div>
