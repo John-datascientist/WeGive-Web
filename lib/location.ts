@@ -31,10 +31,16 @@ export const countries: Record<CountryCode, CountryConfig> = {
     symbol: "₦",
     locale: "en-NG",
     postcodeLabel: "Home postcode",
-    postcodePlaceholder: "e.g. LA-104-772",
-    postcodePattern: /^[A-Z]{2}-\d{3}-\d{3}$/i,
-    generatePostcode: () =>
-      `${letter()}${letter()}-${digit()}${digit()}${digit()}-${digit()}${digit()}${digit()}`,
+    // Loca8tor's real postcode format for Nigeria is UK-style (confirmed
+    // live example: "LA99 0JG"), not the old placeholder dash-separated
+    // format this used to simulate before the real API was wired in.
+    postcodePlaceholder: "e.g. LA99 0JG",
+    postcodePattern: /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i,
+    generatePostcode: () => {
+      const outward = `${letter()}${letter()}${digit()}${Math.random() > 0.5 ? letter() : digit()}`;
+      const inward = `${digit()}${letter()}${letter()}`;
+      return `${outward} ${inward}`;
+    },
     escrowBank: {
       bank: "Providus Bank",
       accountName: "WeeGive Escrow Wallet",

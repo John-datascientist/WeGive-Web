@@ -5,15 +5,20 @@ import { adminNav } from "@/lib/portal-nav";
 import {
   adminGiveawayQueue,
   adminDeliveries,
-  adminRiders,
   adminBusinesses,
 } from "@/lib/mock-data";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Admin overview" };
 
-export default function AdminOverviewPage() {
+export default async function AdminOverviewPage() {
+  const supabase = await createClient();
+  const { count: verifiedRiders } = await supabase
+    .from("riders")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "VERIFIED");
+
   const activeDeliveries = adminDeliveries.filter((d) => d.status !== "Delivered").length;
-  const verifiedRiders = adminRiders.filter((r) => r.verification === "Verified").length;
   const verifiedBusinesses = adminBusinesses.filter((b) => b.status === "Verified").length;
 
   return (
@@ -26,7 +31,7 @@ export default function AdminOverviewPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard label="Pending reviews" value={String(adminGiveawayQueue.length)} />
         <StatCard label="Active deliveries" value={String(activeDeliveries)} />
-        <StatCard label="Verified riders" value={String(verifiedRiders)} />
+        <StatCard label="Verified riders" value={String(verifiedRiders ?? 0)} />
         <StatCard label="Verified businesses" value={String(verifiedBusinesses)} />
       </div>
       <Card>

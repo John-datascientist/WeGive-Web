@@ -14,7 +14,7 @@ export default function RiderDashboardPage() {
       navItems={riderNav}
       portalLabel="Rider"
       title="Rider dashboard"
-      description="Your rider profile, powered by your verified Loca8tor profile."
+      description="Your rider profile and delivery activity."
     >
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Deliveries today" value={String(active.length)} />

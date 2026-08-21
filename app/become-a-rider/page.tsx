@@ -1,6 +1,6 @@
-import { ButtonLink, Card, Eyebrow } from "@/components/ui";
-import { countries } from "@/lib/location";
+import { Card, Eyebrow } from "@/components/ui";
 import { getSelectedCountry } from "@/lib/location-server";
+import { BecomeARiderForm } from "./become-a-rider-form";
 
 export const metadata = { title: "Become a rider" };
 
@@ -12,8 +12,6 @@ const requirements = [
 
 export default async function BecomeARiderPage() {
   const country = await getSelectedCountry();
-  const isNigeria = country === "NG";
-  const loca8torUrl = process.env.NEXT_PUBLIC_LOCA8TOR_RIDER_URL;
 
   return (
     <div className="container-page flex flex-col gap-14 py-14 sm:py-20">
@@ -40,47 +38,7 @@ export default async function BecomeARiderPage() {
         </ul>
       </Card>
 
-      {isNigeria ? (
-        <div className="flex flex-col items-start gap-4 border border-border-strong bg-brand-light/60 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-ink">Sign up with Loca8tor</h3>
-            <p className="mt-1 text-sm leading-6 text-ink/80">
-              WeeGive deliveries in {countries[country].name} are carried out
-              by riders verified through Loca8tor, our sibling logistics
-              platform. Sign up there to start receiving delivery requests.
-            </p>
-          </div>
-          {loca8torUrl ? (
-            <a
-              href={loca8torUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="label-caps w-full shrink-0 border border-ink bg-ink px-6 py-3.5 text-center text-xs font-semibold text-surface transition-colors hover:bg-transparent hover:text-ink sm:w-auto"
-            >
-              Sign up on Loca8tor
-            </a>
-          ) : (
-            <ButtonLink href="/contact" variant="primary" className="w-full shrink-0 sm:w-auto">
-              Get in touch to sign up
-            </ButtonLink>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-start gap-4 border border-border-strong bg-brand-light/60 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-ink">Coming soon to {countries[country].name}</h3>
-            <p className="mt-1 text-sm leading-6 text-ink/80">
-              We&apos;re integrating an automatic rider-matching system for{" "}
-              {countries[country].name}, so riders and drivers get linked to
-              nearby deliveries without a separate app. Leave your details
-              and we&apos;ll reach out when rider signups open.
-            </p>
-          </div>
-          <ButtonLink href="/contact" variant="primary" className="w-full shrink-0 sm:w-auto">
-            Get notified
-          </ButtonLink>
-        </div>
-      )}
+      <BecomeARiderForm country={country} />
     </div>
   );
 }
