@@ -9,7 +9,7 @@ export default function PrivacyPage() {
       eyebrow="Legal"
       title="Privacy policy"
       updated="19 August 2026"
-      intro="WeGive connects people and businesses giving away useful items with people who need them. This policy explains what we collect to make that work, how location data is handled through Loca8tor, and what stays private."
+      intro="WeeGive connects people and businesses giving away useful items with people who need them. This policy explains what we collect to make that work, how location data is handled through Loca8tor, and what stays private."
       sections={[
         {
           heading: "What we collect",
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
               <p>
                 Distance, routing, live tracking and postcode resolution are
                 provided by Loca8tor, a sibling product under Workerholics
-                Solutions, through its API. WeGive never touches Loca8tor&apos;s
+                Solutions, through its API. WeeGive never touches Loca8tor&apos;s
                 underlying location database directly.
               </p>
               <p>
@@ -55,10 +55,10 @@ export default function PrivacyPage() {
           body: (
             <p>
               When you pay for a delivery or sponsor someone else&apos;s, the
-              amount is held in WeGive&apos;s escrow wallet, not paid out
+              amount is held in WeeGive&apos;s escrow wallet, not paid out
               immediately. We record who paid, how (card or bank transfer),
               how much, and when it&apos;s released to a rider or refunded.
-              This transaction history is visible to WeGive admins for
+              This transaction history is visible to WeeGive admins for
               dispute resolution, never sold or shared for marketing.
             </p>
           ),
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
                 the recipient&apos;s identity or exact address.
               </li>
               <li>
-                • WeGive staff access personal data only to operate the
+                • WeeGive staff access personal data only to operate the
                 platform, investigate reports, or respond to legal requests.
               </li>
             </ul>
@@ -127,8 +127,8 @@ export default function PrivacyPage() {
             <p>
               Questions about your data or this policy? Reach the privacy
               team at{" "}
-              <a href="mailto:privacy@wegive.app" className="font-semibold text-ink underline decoration-1 underline-offset-4">
-                privacy@wegive.app
+              <a href="mailto:privacy@weegive.app" className="font-semibold text-ink underline decoration-1 underline-offset-4">
+                privacy@weegive.app
               </a>{" "}
               or use our{" "}
               <Link href="/contact" className="font-semibold text-ink underline decoration-1 underline-offset-4">

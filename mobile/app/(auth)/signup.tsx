@@ -54,7 +54,7 @@ export default function SignupScreen() {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={styles.content}>
-          <Text style={styles.logo}>WEGIVE</Text>
+          <Text style={styles.logo}>WEEGIVE</Text>
           <Text style={styles.title}>Check your email</Text>
           <View style={styles.checkEmailBox}>
             <Text style={styles.checkEmailText}>
@@ -74,7 +74,7 @@ export default function SignupScreen() {
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.logo}>WEGIVE</Text>
+          <Text style={styles.logo}>WEEGIVE</Text>
           <Text style={styles.title}>Create your account</Text>
           <Text style={styles.subtitle}>Give and get in your community.</Text>
 

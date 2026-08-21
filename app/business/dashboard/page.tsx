@@ -16,7 +16,7 @@ export default function BusinessDashboardPage() {
       navItems={businessNav}
       portalLabel="Business"
       title="Business dashboard"
-      description="An overview of your organization's giving on WeGive."
+      description="An overview of your organization's giving on WeeGive."
     >
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Active campaigns" value={String(activeCampaigns)} />

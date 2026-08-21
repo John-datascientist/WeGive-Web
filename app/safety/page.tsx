@@ -31,7 +31,7 @@ const sections = [
   {
     heading: "Payments held in escrow",
     items: [
-      "Delivery and sponsorship payments sit in WeGive's escrow wallet",
+      "Delivery and sponsorship payments sit in WeeGive's escrow wallet",
       "Funds are released to a rider only once delivery is confirmed",
       "No payment is ever made directly between users",
     ],
@@ -62,7 +62,7 @@ export default function SafetyPage() {
           Built with privacy and safety in mind
         </h1>
         <p className="text-base leading-7 text-muted-foreground">
-          WeGive limits what&apos;s shared publicly, verifies the people who
+          WeeGive limits what&apos;s shared publicly, verifies the people who
           move items through the platform, and holds every payment in escrow
           until a delivery is actually confirmed.
         </p>
@@ -104,8 +104,8 @@ export default function SafetyPage() {
           <p className="mt-1 max-w-xl text-sm text-ink/80">
             Report a listing, a message, or a delivery directly, or reach the
             trust &amp; safety team at{" "}
-            <a href="mailto:safety@wegive.app" className="font-semibold underline decoration-1 underline-offset-4">
-              safety@wegive.app
+            <a href="mailto:safety@weegive.app" className="font-semibold underline decoration-1 underline-offset-4">
+              safety@weegive.app
             </a>
             . Reports affecting an active delivery are reviewed first.
           </p>
@@ -118,7 +118,7 @@ export default function SafetyPage() {
       </Card>
 
       <p className="text-center text-xs text-muted-foreground">
-        In an emergency, contact local emergency services first. WeGive
+        In an emergency, contact local emergency services first. WeeGive
         support follows up afterward; it isn&apos;t a substitute. See our{" "}
         <Link href="/terms" className="font-semibold text-ink underline decoration-1 underline-offset-4">
           terms of service

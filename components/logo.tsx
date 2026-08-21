@@ -9,7 +9,7 @@ export function Logo({ className = "" }: { className?: string }) {
       <span className="flex h-8 w-8 items-center justify-center bg-ink text-sm font-black text-surface">
         W
       </span>
-      <span>WeGive</span>
+      <span>WeeGive</span>
     </Link>
   );
 }

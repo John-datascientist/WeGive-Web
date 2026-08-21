@@ -3,10 +3,10 @@ import { Card, Eyebrow } from "@/components/ui";
 export const metadata = { title: "Contact" };
 
 const channels = [
-  { label: "General support", value: "hello@wegive.app", note: "Giving, claiming or account questions" },
-  { label: "Delivery & payments", value: "payments@wegive.app", note: "Escrow, fees, sponsorships and refunds" },
-  { label: "Trust & safety", value: "safety@wegive.app", note: "Report a listing, message or delivery" },
-  { label: "Business", value: "business@wegive.app", note: "Bulk giveaways, corporate giving balance" },
+  { label: "General support", value: "hello@weegive.app", note: "Giving, claiming or account questions" },
+  { label: "Delivery & payments", value: "payments@weegive.app", note: "Escrow, fees, sponsorships and refunds" },
+  { label: "Trust & safety", value: "safety@weegive.app", note: "Report a listing, message or delivery" },
+  { label: "Business", value: "business@weegive.app", note: "Bulk giveaways, corporate giving balance" },
 ];
 
 const topics = [
@@ -27,7 +27,7 @@ export default function ContactPage() {
           Get in touch
         </h1>
         <p className="text-base leading-7 text-muted-foreground">
-          Questions about a giveaway, a delivery, or WeGive for your
+          Questions about a giveaway, a delivery, or WeeGive for your
           business? Send us a message. We reply within 1–2 business days.
         </p>
       </div>
@@ -49,7 +49,7 @@ export default function ContactPage() {
             </Card>
           ))}
           <p className="px-1 text-xs text-muted-foreground">
-            WeGive HQ · Lagos, Nigeria. A Workerholics Solutions company.
+            WeeGive HQ · Lagos, Nigeria. A Workerholics Solutions company.
           </p>
         </div>
 

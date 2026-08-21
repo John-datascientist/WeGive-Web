@@ -124,7 +124,7 @@ export default async function GiveawayDetailPage({
             <p className="text-sm text-ink/80">
               You&apos;ve used your first claim. List something you no
               longer need to unlock the ability to claim more, it keeps
-              WeGive a two-way exchange instead of a one-way stream.
+              WeeGive a two-way exchange instead of a one-way stream.
             </p>
             <ButtonLink href="/giveaway/create" variant="primary">
               List a giveaway

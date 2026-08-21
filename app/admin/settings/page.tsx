@@ -10,7 +10,7 @@ const settingGroups = [
   "Verification requirements",
   "Delivery pricing",
   "VAT configuration",
-  "WeGive administration fee",
+  "WeeGive administration fee",
   "Vehicle pricing",
   "Sponsorship settings",
   "Claim limits",
@@ -25,7 +25,7 @@ export default function AdminSettingsPage() {
       navItems={adminNav}
       portalLabel="Admin"
       title="Platform settings"
-      description="Configure WeGive without touching code. Every change here is written to the audit log."
+      description="Configure WeeGive without touching code. Every change here is written to the audit log."
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {settingGroups.map((s) => (

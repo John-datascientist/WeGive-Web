@@ -1,12 +1,12 @@
-# WeGive Web
+# WeeGive Web
 
-WeGive is a social distribution network: a platform where people and
+WeeGive is a social distribution network: a platform where people and
 businesses giving away useful items connect with people who need them, with
 location intelligence and delivery infrastructure making the exchange
 possible. Location, postcodes, distance, routing and delivery tracking are
 powered by **Loca8tor**, a sibling product under Workerholics Solutions.
 
-This repository is the WeGive **frontend**: a Next.js (App Router,
+This repository is the WeeGive **frontend**: a Next.js (App Router,
 TypeScript, Tailwind CSS) application implementing the platform's full page
 structure and a fully built homepage and signup flow. It also contains a
 starting Expo/React Native mobile app scaffold under `mobile/`, sharing the
@@ -24,7 +24,7 @@ same Supabase project (same accounts, same database) as this website. See
   fully written, not placeholders. Real policy sections, an FAQ tying
   together escrow/sponsorship, contact channels by topic, and stats/
   architecture explainers.
-- **Homepage** (`app/page.tsx`): hero, "How WeGive Works", "Giveaways Near
+- **Homepage** (`app/page.tsx`): hero, "How WeeGive Works", "Giveaways Near
   You", "Help Someone Get Their Giveaway", "Businesses Give Too", and
   "Powered by Loca8tor", using representative mock data.
 - **Signup flow** (`app/signup/page.tsx`): account details plus a country
@@ -64,7 +64,7 @@ same Supabase project (same accounts, same database) as this website. See
 - **Payment & escrow UI** (`components/payment-panel.tsx`): shared by the
   delivery payment step and the sponsor checkout flow
   (`app/sponsor/[id]`). Payers choose card or bank transfer; the UI frames
-  every payment as going into WeGive's escrow wallet and being released to
+  every payment as going into WeeGive's escrow wallet and being released to
   the rider only once delivery is confirmed. `app/admin/payments` shows the
   escrow wallet balance and a transaction ledger (held / released /
   refunded) alongside the pricing configuration.
@@ -83,14 +83,14 @@ non-negotiable for the real implementation (not yet built, but the UI is
 shaped around them):
 
 - **The frontend never calculates money.** Delivery fee, VAT and the
-  WeGive administration fee are always computed server-side by a single
+  WeeGive administration fee are always computed server-side by a single
   pricing engine (`calculateDeliveryFee`), configured by admins
   (`VAT_RATE`, `ADMIN_FEE`, per-vehicle rates, `BASE_FEE`, `PER_KM_RATE`),
   never hard-coded per component. The delivery breakdown UI
   (`app/giveaway/[id]/delivery`) is laid out to display, not compute, these
   numbers.
-- **WeGive owns**: users, giveaways, claims, reservations, sponsorships,
-  delivery orders, transactions, campaigns, reports, and WeGive-specific
+- **WeeGive owns**: users, giveaways, claims, reservations, sponsorships,
+  delivery orders, transactions, campaigns, reports, and WeeGive-specific
   notifications/moderation.
 - **Loca8tor owns**: postcodes, location resolution, distance, routing,
   navigation, live tracking, and rider/fleet infrastructure, consumed only
@@ -104,7 +104,7 @@ shaped around them):
   hold.
 - Before adding new tables for users, locations, postcodes, drivers,
   vehicles, fleets, payments, or API clients, check whether the entity
-  already exists; don't duplicate what WeGive or Loca8tor already own.
+  already exists; don't duplicate what WeeGive or Loca8tor already own.
 
 ## What's not built yet
 
@@ -118,7 +118,7 @@ further needs, roughly in order:
    DELIVERY_PENDING → DELIVERED → COMPLETED` lifecycle, and admin
    moderation.
 3. The server-side delivery pricing engine and a `PaymentService`
-   abstraction (provider-agnostic, so WeGive isn't locked to one payment
+   abstraction (provider-agnostic, so WeeGive isn't locked to one payment
    processor).
 4. The Loca8tor API integration for postcode generation/resolution,
    distance/routing, and live tracking, consumed via Loca8tor's public

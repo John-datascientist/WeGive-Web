@@ -9,13 +9,13 @@ export default function TermsPage() {
       eyebrow="Legal"
       title="Terms of service"
       updated="19 August 2026"
-      intro="These terms cover giving, claiming, delivering and sponsoring items through WeGive. By creating an account, you agree to them."
+      intro="These terms cover giving, claiming, delivering and sponsoring items through WeeGive. By creating an account, you agree to them."
       sections={[
         {
           heading: "Your account",
           body: (
             <p>
-              You must be at least 18 to create a WeGive account, and the
+              You must be at least 18 to create a WeeGive account, and the
               details you provide (name, contact info, home postcode) must
               be accurate. Businesses go through a separate verification
               flow before they can list bulk giveaways or fund a corporate
@@ -61,16 +61,16 @@ export default function TermsPage() {
             <>
               <p>
                 Delivery fees are calculated server-side from distance, plus
-                VAT and a WeGive administration fee, never estimated or
+                VAT and a WeeGive administration fee, never estimated or
                 trusted from the browser. Whatever you pay, whether by card
-                or bank transfer, is held in WeGive&apos;s escrow wallet and
+                or bank transfer, is held in WeeGive&apos;s escrow wallet and
                 released to the rider only once delivery is confirmed.
               </p>
               <p>
                 Anyone can sponsor part or all of a delivery&apos;s fee
                 through a shared link. Sponsorship contributions are also
                 held in escrow and are non-refundable once a delivery is
-                confirmed complete, except where WeGive determines a refund
+                confirmed complete, except where WeeGive determines a refund
                 is warranted.
               </p>
             </>
@@ -95,7 +95,7 @@ export default function TermsPage() {
               <li>• Listing items you don&apos;t own or can&apos;t legally give away</li>
               <li>• Listing prohibited, hazardous, or counterfeit items</li>
               <li>• Misrepresenting an item&apos;s condition to secure a claim</li>
-              <li>• Attempting to circumvent escrow by arranging payment outside WeGive</li>
+              <li>• Attempting to circumvent escrow by arranging payment outside WeeGive</li>
               <li>• Harassing another user in claim or delivery messaging</li>
             </ul>
           ),
@@ -128,8 +128,8 @@ export default function TermsPage() {
           body: (
             <p>
               Questions about these terms? Reach us at{" "}
-              <a href="mailto:legal@wegive.app" className="font-semibold text-ink underline decoration-1 underline-offset-4">
-                legal@wegive.app
+              <a href="mailto:legal@weegive.app" className="font-semibold text-ink underline decoration-1 underline-offset-4">
+                legal@weegive.app
               </a>{" "}
               or use our{" "}
               <Link href="/contact" className="font-semibold text-ink underline decoration-1 underline-offset-4">

@@ -22,7 +22,7 @@ export default async function SettingsPage() {
       <Card>
         <h3 className="text-sm font-semibold text-foreground">Country & currency</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Set at signup, based on where you live. Prices across WeGive
+          Set at signup, based on where you live. Prices across WeeGive
           display in this currency.
         </p>
         <div className="mt-4">

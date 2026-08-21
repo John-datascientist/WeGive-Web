@@ -47,7 +47,7 @@ export default async function GiveawayDeliveryPage({
   const rows = [
     { label: "Delivery fee", value: breakdown.deliveryFee },
     { label: "VAT", value: breakdown.vat },
-    { label: "WeGive administration fee", value: breakdown.adminFee },
+    { label: "WeeGive administration fee", value: breakdown.adminFee },
   ];
 
   return (

@@ -37,7 +37,7 @@ export const countries: Record<CountryCode, CountryConfig> = {
       `${letter()}${letter()}-${digit()}${digit()}${digit()}-${digit()}${digit()}${digit()}`,
     escrowBank: {
       bank: "Providus Bank",
-      accountName: "WeGive Escrow Wallet",
+      accountName: "WeeGive Escrow Wallet",
       accountLabel: "Account number",
       accountNumber: "8900 442 217",
     },
@@ -59,8 +59,8 @@ export const countries: Record<CountryCode, CountryConfig> = {
       return `${outward} ${inward}`;
     },
     escrowBank: {
-      bank: "WeGive Escrow (UK) Ltd, sort code 04-00-72",
-      accountName: "WeGive Escrow Wallet",
+      bank: "WeeGive Escrow (UK) Ltd, sort code 04-00-72",
+      accountName: "WeeGive Escrow Wallet",
       accountLabel: "Account number",
       accountNumber: "84 22 17 90",
     },
@@ -78,8 +78,8 @@ export const countries: Record<CountryCode, CountryConfig> = {
     postcodePattern: /^\d{5}(-\d{4})?$/,
     generatePostcode: () => `${digit()}${digit()}${digit()}${digit()}${digit()}`,
     escrowBank: {
-      bank: "WeGive Escrow (US), routing 021000021",
-      accountName: "WeGive Escrow Wallet",
+      bank: "WeeGive Escrow (US), routing 021000021",
+      accountName: "WeeGive Escrow Wallet",
       accountLabel: "Account number",
       accountNumber: "4471 8900 221",
     },
@@ -98,8 +98,8 @@ export const countries: Record<CountryCode, CountryConfig> = {
     generatePostcode: () =>
       `${letter()}${digit()}${letter()} ${digit()}${letter()}${digit()}`,
     escrowBank: {
-      bank: "WeGive Escrow (Canada), transit 04872",
-      accountName: "WeGive Escrow Wallet",
+      bank: "WeeGive Escrow (Canada), transit 04872",
+      accountName: "WeeGive Escrow Wallet",
       accountLabel: "Account number",
       accountNumber: "220 448 971",
     },

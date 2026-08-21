@@ -34,7 +34,7 @@ export function PaymentPanel({
           {formatCurrency(amount, country)} held in escrow
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Paid via {method.toLowerCase()}. WeGive holds this in the escrow
+          Paid via {method.toLowerCase()}. WeeGive holds this in the escrow
           wallet and releases it to the rider only once delivery is
           confirmed.
         </p>
@@ -50,7 +50,7 @@ export function PaymentPanel({
       <div className="flex items-start gap-2.5 border border-border bg-surface-muted px-4 py-3 text-xs leading-5 text-muted-foreground">
         <span aria-hidden="true">🔒</span>
         <span>
-          Payments are held in WeGive&apos;s escrow wallet and only released
+          Payments are held in WeeGive&apos;s escrow wallet and only released
           to the rider once delivery is confirmed, never paid out upfront.
         </span>
       </div>
@@ -90,7 +90,7 @@ export function PaymentPanel({
         <div className="flex flex-col gap-2 border border-border bg-surface-muted px-4 py-3.5 text-sm">
           <p className="text-foreground">
             Transfer <span className="font-semibold">{formatCurrency(amount, country)}</span> to the
-            WeGive escrow account below. It&apos;s released automatically once
+            WeeGive escrow account below. It&apos;s released automatically once
             we confirm receipt.
           </p>
           <div className="mt-1 flex flex-col gap-1 font-mono text-xs text-muted-foreground">

@@ -143,7 +143,7 @@ export default function SignupPage() {
 
   return (
     <AuthCard
-      title={step === "account" ? "Create your WeGive account" : "Set your home location"}
+      title={step === "account" ? "Create your WeeGive account" : "Set your home location"}
       description={
         step === "account"
           ? "Give and get in your community, it only takes a minute."
@@ -186,7 +186,7 @@ export default function SignupPage() {
               ))}
             </select>
             <p className="text-xs text-muted-foreground">
-              Sets your currency and postcode format across WeGive.
+              Sets your currency and postcode format across WeeGive.
             </p>
           </div>
           <button
@@ -205,7 +205,7 @@ export default function SignupPage() {
             <p className="mt-1 leading-6">
               Your home {config.postcodeLabel.toLowerCase()} will be used as your
               default delivery location when you receive items through
-              WeGive.
+              WeeGive.
             </p>
           </div>
 

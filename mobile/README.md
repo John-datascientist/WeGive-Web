@@ -1,6 +1,6 @@
-# WeGive mobile
+# WeeGive mobile
 
-Expo (React Native) app for WeGive, sharing the same Supabase project as
+Expo (React Native) app for WeeGive, sharing the same Supabase project as
 the web app in the repo root: same accounts, same auth, same database.
 
 ## Status
@@ -65,5 +65,5 @@ This scaffold hasn't been built or submitted anywhere yet. When ready:
    description, privacy policy URL) and submit for review.
 
 `app.json` already sets placeholder bundle identifiers
-(`com.workerholics.wegive`) for both platforms, update those if you
+(`com.workerholics.weegive`) for both platforms, update those if you
 want different ones.

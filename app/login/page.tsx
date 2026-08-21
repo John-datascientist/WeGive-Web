@@ -36,7 +36,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthCard title="Log in to WeGive" description="Welcome back.">
+    <AuthCard title="Log in to WeeGive" description="Welcome back.">
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <TextField id="email" label="Email" type="email" required />
         <TextField id="password" label="Password" type="password" required />
@@ -59,7 +59,7 @@ export default function LoginPage() {
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        New to WeGive?{" "}
+        New to WeeGive?{" "}
         <Link href="/signup" className="font-semibold text-ink underline decoration-1 underline-offset-4">
           Create an account
         </Link>

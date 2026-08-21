@@ -41,7 +41,7 @@ export async function SiteFooter() {
 
       <div className="border-t border-border">
         <div className="container-page label-caps flex flex-col gap-3 py-6 text-[11px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} WeGive, a Workerholics Solutions company</p>
+          <p>&copy; {new Date().getFullYear()} WeeGive, a Workerholics Solutions company</p>
           {country === "NG" && (
             <p className="flex items-center gap-1.5">
               Location &amp; delivery tracking powered by

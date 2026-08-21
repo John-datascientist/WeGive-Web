@@ -13,7 +13,7 @@ export default function AboutPage() {
   return (
     <div className="container-page flex flex-col gap-14 py-14 sm:py-20">
       <div className="flex max-w-2xl flex-col gap-4">
-        <Eyebrow>About WeGive</Eyebrow>
+        <Eyebrow>About WeeGive</Eyebrow>
         <h1 className="text-4xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-5xl">
           A social distribution network, not just a free-stuff site
         </h1>
@@ -21,7 +21,7 @@ export default function AboutPage() {
           Every day, useful things get thrown out simply because
           they&apos;re in the wrong place: a sofa a family has outgrown,
           surplus stock a business can&apos;t sell, food nearing its
-          best-before date. WeGive exists to move those things to people who
+          best-before date. WeeGive exists to move those things to people who
           need them, and to make the hardest part, getting the item from A
           to B, someone else&apos;s problem to solve, not the giver&apos;s
           or the recipient&apos;s.
@@ -47,7 +47,7 @@ export default function AboutPage() {
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Most giveaway sites stop at &ldquo;here&apos;s my address, come
               get it.&rdquo; That leaves out anyone without a car, without
-              help carrying a sofa, or without money for delivery. WeGive
+              help carrying a sofa, or without money for delivery. WeeGive
               prices, arranges and tracks the delivery itself.
             </p>
           </Card>
@@ -73,15 +73,15 @@ export default function AboutPage() {
 
       <div className="flex flex-col gap-6">
         <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
-          How WeGive and Loca8tor split the work
+          How WeeGive and Loca8tor split the work
         </h2>
         <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          WeGive and Loca8tor are sibling products under Workerholics
+          WeeGive and Loca8tor are sibling products under Workerholics
           Solutions, each responsible for a different half of the problem.
         </p>
         <div className="grid gap-5 sm:grid-cols-2">
           <Card>
-            <h3 className="text-sm font-semibold text-foreground">WeGive owns</h3>
+            <h3 className="text-sm font-semibold text-foreground">WeeGive owns</h3>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
               <li className="flex gap-2">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
@@ -93,7 +93,7 @@ export default function AboutPage() {
               </li>
               <li className="flex gap-2">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                <span>Campaigns, reports and WeGive-specific moderation</span>
+                <span>Campaigns, reports and WeeGive-specific moderation</span>
               </li>
             </ul>
           </Card>

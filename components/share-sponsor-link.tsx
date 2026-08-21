@@ -18,7 +18,7 @@ export function ShareSponsorLink({ giveawayId }: { giveawayId: string }) {
       </p>
       <div className="mt-1 flex items-center gap-2">
         <span className="flex-1 truncate border border-border-strong bg-surface px-3 py-2 font-mono text-xs text-muted-foreground">
-          wegive.app{path}
+          weegive.app{path}
         </span>
         <button
           type="button"

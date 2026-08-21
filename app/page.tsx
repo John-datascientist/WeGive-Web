@@ -27,7 +27,7 @@ const steps = [
     number: "03",
     title: "Deliver",
     description:
-      "WeGive calculates delivery cost using real distance and routing, then arranges a rider.",
+      "WeeGive calculates delivery cost using real distance and routing, then arranges a rider.",
   },
   {
     number: "04",
@@ -92,7 +92,7 @@ export default async function Home() {
               </span>
             </h1>
             <p className="max-w-md text-lg font-medium leading-7 text-surface/85 sm:text-xl sm:leading-8">
-              WeGive connects people and businesses giving away useful items
+              WeeGive connects people and businesses giving away useful items
               with people who need them, making it easier to get those items
               delivered.
             </p>
@@ -123,11 +123,11 @@ export default async function Home() {
 
       <Marquee />
 
-      {/* How WeGive Works */}
+      {/* How WeeGive Works */}
       <section className="container-page py-20">
         <SectionHeading
           eyebrow="How it works"
-          title="How WeGive Works"
+          title="How WeeGive Works"
           description="Four simple steps take an item from someone who no longer needs it to someone who does."
           action={{ href: "/how-it-works", label: "See more" }}
         />
@@ -229,7 +229,7 @@ export default async function Home() {
             description={
               country === "NG"
                 ? "Some recipients need help covering the delivery fee. A small contribution gets the item moving."
-                : `WeGive is still expanding to ${countries[country].name}. Check back soon for deliveries you can sponsor here.`
+                : `WeeGive is still expanding to ${countries[country].name}. Check back soon for deliveries you can sponsor here.`
             }
             action={{ href: "/sponsor", label: "See more" }}
           />
@@ -337,7 +337,7 @@ export default async function Home() {
           <SectionHeading
             eyebrow="Community"
             title="Thousands Giving Together"
-            description="Every giveaway starts with a person deciding to share something. WeGive just makes it easy to find each other."
+            description="Every giveaway starts with a person deciding to share something. WeeGive just makes it easy to find each other."
             align="center"
           />
           <PeopleGroup className="mt-14 text-ink" />
@@ -352,19 +352,19 @@ export default async function Home() {
               <SectionHeading
                 eyebrow="Infrastructure"
                 title="Powered by Loca8tor"
-                description="Every postcode, distance calculation, delivery route and live tracking update on WeGive runs on Loca8tor infrastructure, Workerholics' location and logistics platform."
+                description="Every postcode, distance calculation, delivery route and live tracking update on WeeGive runs on Loca8tor infrastructure, Workerholics' location and logistics platform."
               />
             ) : (
               <SectionHeading
                 eyebrow="Infrastructure"
                 title="Automatic Rider Matching"
-                description="WeGive links every delivery to a nearby rider or driver automatically, based on distance and what's being delivered."
+                description="WeeGive links every delivery to a nearby rider or driver automatically, based on distance and what's being delivered."
               />
             )}
             <ul className="mt-6 space-y-3 text-sm leading-6 text-muted-foreground">
               <li className="flex gap-2">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ink" />
-                Postcode generation and resolution, without ever leaving WeGive
+                Postcode generation and resolution, without ever leaving WeeGive
               </li>
               <li className="flex gap-2">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ink" />
@@ -407,8 +407,8 @@ export default async function Home() {
             </div>
             <p className="text-xs text-muted-foreground">
               {country === "NG"
-                ? "WeGive never trusts the browser for the final price. Loca8tor and the WeGive pricing engine calculate it server-side."
-                : "WeGive never trusts the browser for the final price. It's always calculated server-side."}
+                ? "WeeGive never trusts the browser for the final price. Loca8tor and the WeeGive pricing engine calculate it server-side."
+                : "WeeGive never trusts the browser for the final price. It's always calculated server-side."}
             </p>
           </Card>
         </div>

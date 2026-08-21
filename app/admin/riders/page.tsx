@@ -17,7 +17,7 @@ export default function AdminRidersPage() {
       navItems={adminNav}
       portalLabel="Admin"
       title="Riders"
-      description="Riders eligible for WeGive deliveries, sourced from their verified Loca8tor profile."
+      description="Riders eligible for WeeGive deliveries, sourced from their verified Loca8tor profile."
     >
       <SimpleTable
         columns={["Name", "Vehicle", "Verification"]}

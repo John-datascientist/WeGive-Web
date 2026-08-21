@@ -20,7 +20,7 @@ export default async function BecomeARiderPage() {
       <div className="flex max-w-2xl flex-col gap-4">
         <Eyebrow>Become a rider</Eyebrow>
         <h1 className="text-4xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-5xl">
-          Deliver for WeGive
+          Deliver for WeeGive
         </h1>
         <p className="text-base leading-7 text-muted-foreground">
           Riders pick up items from givers and deliver them to whoever
@@ -45,7 +45,7 @@ export default async function BecomeARiderPage() {
           <div>
             <h3 className="text-lg font-bold text-ink">Sign up with Loca8tor</h3>
             <p className="mt-1 text-sm leading-6 text-ink/80">
-              WeGive deliveries in {countries[country].name} are carried out
+              WeeGive deliveries in {countries[country].name} are carried out
               by riders verified through Loca8tor, our sibling logistics
               platform. Sign up there to start receiving delivery requests.
             </p>

@@ -29,7 +29,7 @@ const steps = [
     number: "03",
     title: "Deliver",
     description:
-      "WeGive prices the delivery and holds payment safely until it's actually completed.",
+      "WeeGive prices the delivery and holds payment safely until it's actually completed.",
     items: [
       "Delivery fee, VAT and admin fee calculated server-side from distance",
       "Pay by card or bank transfer, or share a link so others can sponsor it",
@@ -60,11 +60,11 @@ const faqs = [
   },
   {
     q: "How is the delivery fee actually calculated?",
-    a: "A base fee plus a per-kilometre rate, adjusted for vehicle type, then VAT and a small WeGive admin fee. It's computed server-side from the real distance between giver and recipient, never estimated by the browser.",
+    a: "A base fee plus a per-kilometre rate, adjusted for vehicle type, then VAT and a small WeeGive admin fee. It's computed server-side from the real distance between giver and recipient, never estimated by the browser.",
   },
   {
     q: "When does a rider actually get paid?",
-    a: "Only after delivery is confirmed complete. Until then, whatever was paid (by the recipient, the giver, or sponsors) sits in WeGive's escrow wallet.",
+    a: "Only after delivery is confirmed complete. Until then, whatever was paid (by the recipient, the giver, or sponsors) sits in WeeGive's escrow wallet.",
   },
   {
     q: "Can a business give away items too?",
@@ -81,7 +81,7 @@ export default function HowItWorksPage() {
           Give. Claim. Deliver. Track.
         </h1>
         <p className="text-base leading-7 text-muted-foreground">
-          Every giveaway on WeGive moves through the same clear lifecycle,
+          Every giveaway on WeeGive moves through the same clear lifecycle,
           whether it&apos;s a sofa, a laptop, or a bag of rice.
         </p>
       </div>

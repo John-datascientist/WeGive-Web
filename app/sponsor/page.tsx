@@ -20,7 +20,7 @@ export default async function SponsorPage() {
         <p className="text-base leading-7 text-muted-foreground">
           {availableInCountry
             ? "Some recipients need help covering the delivery fee. Sponsor all or part of a delivery: the amount you cover comes straight off what the recipient pays at checkout."
-            : `WeGive is still expanding to ${countries[country].name}. Check back soon for deliveries you can sponsor here.`}
+            : `WeeGive is still expanding to ${countries[country].name}. Check back soon for deliveries you can sponsor here.`}
         </p>
       </div>
 

@@ -15,7 +15,7 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
   {
     heading: "Platform",
     links: [
-      { href: "/about", label: "About WeGive" },
+      { href: "/about", label: "About WeeGive" },
       { href: "/how-it-works", label: "How it works" },
       { href: "/safety", label: "Safety" },
       { href: "/contact", label: "Contact" },

@@ -37,8 +37,8 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.logo}>WEGIVE</Text>
-          <Text style={styles.title}>Log in to WeGive</Text>
+          <Text style={styles.logo}>WEEGIVE</Text>
+          <Text style={styles.title}>Log in to WeeGive</Text>
           <Text style={styles.subtitle}>Welcome back.</Text>
 
           <View style={styles.form}>
@@ -67,7 +67,7 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>New to WeGive? </Text>
+            <Text style={styles.footerText}>New to WeeGive? </Text>
             <Link href="/(auth)/signup" style={styles.footerLink}>
               Create an account
             </Link>

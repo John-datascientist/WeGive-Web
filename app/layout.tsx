@@ -24,11 +24,11 @@ const baloo2 = Baloo_2({
 
 export const metadata: Metadata = {
   title: {
-    default: "WeGive: Give What You Can. Get What You Need.",
-    template: "%s · WeGive",
+    default: "WeeGive: Give What You Can. Get What You Need.",
+    template: "%s · WeeGive",
   },
   description:
-    "WeGive connects people and businesses giving away useful items with people who need them, and makes it easier to get those items delivered.",
+    "WeeGive connects people and businesses giving away useful items with people who need them, and makes it easier to get those items delivered.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

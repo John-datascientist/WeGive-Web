@@ -21,7 +21,7 @@ export default function AdminOverviewPage() {
       navItems={adminNav}
       portalLabel="Admin"
       title="Platform overview"
-      description="A snapshot of activity across WeGive."
+      description="A snapshot of activity across WeeGive."
     >
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard label="Pending reviews" value={String(adminGiveawayQueue.length)} />
