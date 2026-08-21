@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AuthCard, TextField } from "@/components/auth-card";
 import { countries, countryList, isValidPostcode, COUNTRY_COOKIE, type CountryCode } from "@/lib/location";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentCoordinates, resolvePostcodeFromCoordinates } from "@/lib/loca8tor-client";
+import { getCurrentCoordinates, resolvePostcodeFromCoordinates, verifyNigerianPostcode } from "@/lib/loca8tor-client";
 
 type Step = "account" | "location";
 type PostcodeMode = "choose" | "manual" | "generating" | "generated";
@@ -33,15 +33,45 @@ export default function SignupPage() {
   const [generationStep, setGenerationStep] = useState(0);
   const [genError, setGenError] = useState<string | null>(null);
   const [postcode, setPostcode] = useState("");
+  const [postcodeLat, setPostcodeLat] = useState<number | null>(null);
+  const [postcodeLng, setPostcodeLng] = useState<number | null>(null);
   const [manualPostcode, setManualPostcode] = useState("");
+  const [manualVerified, setManualVerified] = useState(false);
+  const [manualVerifying, setManualVerifying] = useState(false);
+  const [manualVerifyError, setManualVerifyError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkEmail, setCheckEmail] = useState(false);
 
   const config = countries[country];
-  const manualIsValid = manualPostcode.length > 0 && isValidPostcode(manualPostcode, country);
+  // A format match alone isn't enough for Nigeria — that only confirms the
+  // string LOOKS like a Loca8tor postcode, not that Loca8tor ever actually
+  // issued it. Only a real /lookup verification confirms that. Outside
+  // Nigeria, Loca8tor has nothing to verify against, so format is all we have.
+  const manualFormatOk = manualPostcode.length > 0 && isValidPostcode(manualPostcode, country);
+  const manualIsValid = country === "NG" ? manualVerified : manualFormatOk;
   const addressIsValid = addressLine1.trim().length > 0 && city.trim().length > 0 && region.trim().length > 0;
+
+  async function verifyManualPostcode() {
+    setManualVerifyError(null);
+    setManualVerifying(true);
+    try {
+      const verified = await verifyNigerianPostcode(manualPostcode);
+      if (!verified) {
+        setManualVerifyError("That postcode wasn't found in Loca8tor's records. Double-check it, or generate one instead.");
+        return;
+      }
+      setManualPostcode(verified.postcode);
+      setManualVerified(true);
+      setPostcodeLat(verified.latitude);
+      setPostcodeLng(verified.longitude);
+    } catch (err) {
+      setManualVerifyError(err instanceof Error ? err.message : "Couldn't verify that postcode.");
+    } finally {
+      setManualVerifying(false);
+    }
+  }
 
   function startGenerating() {
     setGenError(null);
@@ -76,6 +106,8 @@ export default function SignupPage() {
       setGenerationStep(2);
       const resolvedPostcode = await resolvePostcodeFromCoordinates(latitude, longitude);
       setPostcode(resolvedPostcode);
+      setPostcodeLat(latitude);
+      setPostcodeLng(longitude);
       setMode("generated");
     } catch (err) {
       setGenError(err instanceof Error ? err.message : "Couldn't generate your postcode.");
@@ -99,6 +131,8 @@ export default function SignupPage() {
           phone,
           country,
           postcode: finalPostcode,
+          postcode_lat: postcodeLat,
+          postcode_lng: postcodeLng,
           address_line1: addressLine1,
           address_line2: addressLine2,
           city,
@@ -143,7 +177,7 @@ export default function SignupPage() {
 
   return (
     <AuthCard
-      title={step === "account" ? "Create your WeeGive account" : "Set your home location"}
+      title={step === "account" ? "Create your WeGive account" : "Set your home location"}
       description={
         step === "account"
           ? "Give and get in your community, it only takes a minute."
@@ -186,7 +220,7 @@ export default function SignupPage() {
               ))}
             </select>
             <p className="text-xs text-muted-foreground">
-              Sets your currency and postcode format across WeeGive.
+              Sets your currency and postcode format across WeGive.
             </p>
           </div>
           <button
@@ -205,7 +239,7 @@ export default function SignupPage() {
             <p className="mt-1 leading-6">
               Your home {config.postcodeLabel.toLowerCase()} will be used as your
               default delivery location when you receive items through
-              WeeGive.
+              WeGive.
             </p>
           </div>
 
@@ -272,23 +306,48 @@ export default function SignupPage() {
                 <label htmlFor="postcode" className="label-caps text-xs font-semibold text-foreground">
                   {config.postcodeLabel} <span className="text-accent-dark">*</span>
                 </label>
-                <input
-                  id="postcode"
-                  name="postcode"
-                  value={manualPostcode}
-                  onChange={(e) => setManualPostcode(e.target.value)}
-                  placeholder={config.postcodePlaceholder}
-                  className={`border bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink ${
-                    manualPostcode.length > 0 && !manualIsValid
-                      ? "border-warn"
-                      : "border-border-strong"
-                  }`}
-                />
-                {manualPostcode.length > 0 && !manualIsValid && (
+                <div className="flex gap-2">
+                  <input
+                    id="postcode"
+                    name="postcode"
+                    value={manualPostcode}
+                    onChange={(e) => {
+                      setManualPostcode(e.target.value);
+                      setManualVerified(false);
+                      setManualVerifyError(null);
+                    }}
+                    placeholder={config.postcodePlaceholder}
+                    className={`min-w-0 flex-1 border bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink ${
+                      manualPostcode.length > 0 && country !== "NG" && !manualFormatOk
+                        ? "border-warn"
+                        : "border-border-strong"
+                    }`}
+                  />
+                  {country === "NG" && !manualVerified && (
+                    <button
+                      type="button"
+                      onClick={verifyManualPostcode}
+                      disabled={manualVerifying || manualPostcode.trim().length === 0}
+                      className="label-caps shrink-0 border border-ink px-3 py-2.5 text-xs font-semibold text-ink transition-colors hover:bg-ink hover:text-surface disabled:opacity-60"
+                    >
+                      {manualVerifying ? "Verifying…" : "Verify"}
+                    </button>
+                  )}
+                </div>
+                {country === "NG" && manualVerified && (
+                  <p className="text-xs text-ink">✓ Verified with Loca8tor.</p>
+                )}
+                {country === "NG" && !manualVerified && manualFormatOk && !manualVerifyError && (
+                  <p className="text-xs text-muted-foreground">
+                    Looks correctly formatted, but Nigerian postcodes must be verified with Loca8tor before continuing.
+                  </p>
+                )}
+                {country !== "NG" && manualPostcode.length > 0 && !manualFormatOk && (
                   <p className="text-xs text-warn">
                     Doesn&apos;t look like a valid {config.name} {config.postcodeLabel.toLowerCase()} ({config.postcodePlaceholder}).
                   </p>
                 )}
+                {manualVerifyError && <p className="text-xs text-warn">{manualVerifyError}</p>}
               </div>
               <button
                 type="button"

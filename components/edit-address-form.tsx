@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { TextField } from "@/components/auth-card";
 import { countries, isValidPostcode, type CountryCode } from "@/lib/location";
 import { createClient } from "@/lib/supabase/client";
-import { resolvePostcodeFromLocation } from "@/lib/loca8tor-client";
+import { resolvePostcodeFromLocation, verifyNigerianPostcode } from "@/lib/loca8tor-client";
 
 export function EditAddressForm({
   country,
@@ -36,10 +36,17 @@ export function EditAddressForm({
   const [postcodeFromApi, setPostcodeFromApi] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
 
-  // A postcode Loca8tor just resolved is trusted as-is, no need to
-  // re-check it against our own (approximate) format pattern.
-  const postcodeIsValid = postcodeFromApi || (postcode.length > 0 && isValidPostcode(postcode, country));
+  // A postcode Loca8tor just resolved (GPS-generated, or manually verified
+  // below) is trusted as-is. For Nigeria, a format match alone is NOT
+  // enough to save — matching the pattern doesn't mean the postcode was
+  // ever actually issued by Loca8tor, only verifying it against Loca8tor's
+  // own records does. Outside Nigeria, Loca8tor has nothing to verify
+  // against, so format is the only check available.
+  const postcodeIsValid =
+    postcodeFromApi || (country !== "NG" && postcode.length > 0 && isValidPostcode(postcode, country));
   const canSave = postcodeIsValid && line1.trim().length > 0 && city.trim().length > 0 && region.trim().length > 0;
 
   async function handleUseCurrentLocation() {
@@ -53,6 +60,24 @@ export function EditAddressForm({
       setLocateError(err instanceof Error ? err.message : "Couldn't get your location.");
     } finally {
       setLocating(false);
+    }
+  }
+
+  async function handleVerifyPostcode() {
+    setVerifyError(null);
+    setVerifying(true);
+    try {
+      const verified = await verifyNigerianPostcode(postcode);
+      if (!verified) {
+        setVerifyError("That postcode wasn't found in Loca8tor's records. Double-check it, or generate one with your current location instead.");
+        return;
+      }
+      setPostcode(verified.postcode);
+      setPostcodeFromApi(true);
+    } catch (err) {
+      setVerifyError(err instanceof Error ? err.message : "Couldn't verify that postcode.");
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -169,23 +194,45 @@ export function EditAddressForm({
             </button>
           )}
         </div>
-        <input
-          id="edit-postcode"
-          value={postcode}
-          onChange={(e) => {
-            setPostcode(e.target.value);
-            setPostcodeFromApi(false);
-          }}
-          placeholder={config.postcodePlaceholder}
-          className={`border bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink ${
-            postcode.length > 0 && !postcodeIsValid ? "border-warn" : "border-border-strong"
-          }`}
-        />
-        {postcode.length > 0 && !postcodeIsValid && (
+        <div className="flex gap-2">
+          <input
+            id="edit-postcode"
+            value={postcode}
+            onChange={(e) => {
+              setPostcode(e.target.value);
+              setPostcodeFromApi(false);
+              setVerifyError(null);
+            }}
+            placeholder={config.postcodePlaceholder}
+            className={`min-w-0 flex-1 border bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink ${
+              postcode.length > 0 && !postcodeIsValid ? "border-warn" : "border-border-strong"
+            }`}
+          />
+          {country === "NG" && !postcodeFromApi && (
+            <button
+              type="button"
+              onClick={handleVerifyPostcode}
+              disabled={verifying || postcode.trim().length === 0}
+              className="label-caps shrink-0 border border-ink px-3 py-2.5 text-xs font-semibold text-ink transition-colors hover:bg-ink hover:text-surface disabled:opacity-60"
+            >
+              {verifying ? "Verifying…" : "Verify"}
+            </button>
+          )}
+        </div>
+        {country === "NG" && postcodeFromApi && (
+          <p className="text-xs text-ink">✓ Verified with Loca8tor.</p>
+        )}
+        {country === "NG" && !postcodeFromApi && postcode.length > 0 && isValidPostcode(postcode, country) && !verifyError && (
+          <p className="text-xs text-muted-foreground">
+            Looks correctly formatted, but Nigerian postcodes must be verified with Loca8tor before saving.
+          </p>
+        )}
+        {postcode.length > 0 && country !== "NG" && !postcodeIsValid && (
           <p className="text-xs text-warn">
             Doesn&apos;t look like a valid {config.name} {config.postcodeLabel.toLowerCase()} ({config.postcodePlaceholder}).
           </p>
         )}
+        {verifyError && <p className="text-xs text-warn">{verifyError}</p>}
         {locateError && <p className="text-xs text-warn">{locateError}</p>}
       </div>
       {error && (
@@ -210,6 +257,7 @@ export function EditAddressForm({
             setPostcode(initialPostcode);
             setPostcodeFromApi(false);
             setLocateError(null);
+            setVerifyError(null);
             setError(null);
             setEditing(false);
           }}
