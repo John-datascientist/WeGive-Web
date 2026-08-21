@@ -2,98 +2,145 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { TextField } from "@/components/auth-card";
-import { countries, isValidPostcode, type CountryCode } from "@/lib/location";
+import Link from "next/link";
+import { AuthCard, TextField } from "@/components/auth-card";
+import { countries, countryList, isValidPostcode, COUNTRY_COOKIE, type CountryCode } from "@/lib/location";
 import { createClient } from "@/lib/supabase/client";
-import { resolvePostcodeFromLocation, verifyNigerianPostcode } from "@/lib/loca8tor-client";
+import { getCurrentCoordinates, resolvePostcodeFromCoordinates, verifyNigerianPostcode } from "@/lib/loca8tor-client";
 
-export function EditAddressForm({
-  country,
-  initialPostcode,
-  initialLine1,
-  initialLine2,
-  initialCity,
-  initialRegion,
-}: {
-  country: CountryCode;
-  initialPostcode: string;
-  initialLine1: string;
-  initialLine2: string;
-  initialCity: string;
-  initialRegion: string;
-}) {
+type Step = "account" | "location";
+type PostcodeMode = "choose" | "manual" | "generating" | "generated";
+
+const generationSteps = [
+  "Requesting location permission…",
+  "Reading GPS coordinates…",
+  "Resolving your postcode…",
+];
+
+export default function SignupPage() {
   const router = useRouter();
-  const config = countries[country];
-  const [editing, setEditing] = useState(false);
-  const [postcode, setPostcode] = useState(initialPostcode);
-  const [line1, setLine1] = useState(initialLine1);
-  const [line2, setLine2] = useState(initialLine2);
-  const [city, setCity] = useState(initialCity);
-  const [region, setRegion] = useState(initialRegion);
+  const [step, setStep] = useState<Step>("account");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [country, setCountry] = useState<CountryCode>("NG");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [region, setRegion] = useState("");
+  const [mode, setMode] = useState<PostcodeMode>("choose");
+  const [generationStep, setGenerationStep] = useState(0);
+  const [genError, setGenError] = useState<string | null>(null);
+  const [postcode, setPostcode] = useState("");
+  const [postcodeLat, setPostcodeLat] = useState<number | null>(null);
+  const [postcodeLng, setPostcodeLng] = useState<number | null>(null);
+  const [manualPostcode, setManualPostcode] = useState("");
+  const [manualVerified, setManualVerified] = useState(false);
+  const [manualVerifying, setManualVerifying] = useState(false);
+  const [manualVerifyError, setManualVerifyError] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [postcodeFromApi, setPostcodeFromApi] = useState(false);
-  const [locating, setLocating] = useState(false);
-  const [locateError, setLocateError] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(false);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [checkEmail, setCheckEmail] = useState(false);
 
-  // A postcode Loca8tor just resolved (GPS-generated, or manually verified
-  // below) is trusted as-is. For Nigeria, a format match alone is NOT
-  // enough to save — matching the pattern doesn't mean the postcode was
-  // ever actually issued by Loca8tor, only verifying it against Loca8tor's
-  // own records does. Outside Nigeria, Loca8tor has nothing to verify
-  // against, so format is the only check available.
-  const postcodeIsValid =
-    postcodeFromApi || (country !== "NG" && postcode.length > 0 && isValidPostcode(postcode, country));
-  const canSave = postcodeIsValid && line1.trim().length > 0 && city.trim().length > 0 && region.trim().length > 0;
+  const config = countries[country];
+  // A format match alone isn't enough for Nigeria — that only confirms the
+  // string LOOKS like a Loca8tor postcode, not that Loca8tor ever actually
+  // issued it. Only a real /lookup verification confirms that. Outside
+  // Nigeria, Loca8tor has nothing to verify against, so format is all we have.
+  const manualFormatOk = manualPostcode.length > 0 && isValidPostcode(manualPostcode, country);
+  const manualIsValid = country === "NG" ? manualVerified : manualFormatOk;
+  const addressIsValid = addressLine1.trim().length > 0 && city.trim().length > 0 && region.trim().length > 0;
 
-  async function handleUseCurrentLocation() {
-    setLocateError(null);
-    setLocating(true);
+  async function verifyManualPostcode() {
+    setManualVerifyError(null);
+    setManualVerifying(true);
     try {
-      const resolved = await resolvePostcodeFromLocation();
-      setPostcode(resolved);
-      setPostcodeFromApi(true);
-    } catch (err) {
-      setLocateError(err instanceof Error ? err.message : "Couldn't get your location.");
-    } finally {
-      setLocating(false);
-    }
-  }
-
-  async function handleVerifyPostcode() {
-    setVerifyError(null);
-    setVerifying(true);
-    try {
-      const verified = await verifyNigerianPostcode(postcode);
+      const verified = await verifyNigerianPostcode(manualPostcode);
       if (!verified) {
-        setVerifyError("That postcode wasn't found in Loca8tor's records. Double-check it, or generate one with your current location instead.");
+        setManualVerifyError("That postcode wasn't found in Loca8tor's records. Double-check it, or generate one instead.");
         return;
       }
-      setPostcode(verified.postcode);
-      setPostcodeFromApi(true);
+      setManualPostcode(verified.postcode);
+      setManualVerified(true);
+      setPostcodeLat(verified.latitude);
+      setPostcodeLng(verified.longitude);
     } catch (err) {
-      setVerifyError(err instanceof Error ? err.message : "Couldn't verify that postcode.");
+      setManualVerifyError(err instanceof Error ? err.message : "Couldn't verify that postcode.");
     } finally {
-      setVerifying(false);
+      setManualVerifying(false);
     }
   }
 
-  async function handleSave() {
+  function startGenerating() {
+    setGenError(null);
+    setMode("generating");
+    setGenerationStep(0);
+
+    if (country !== "NG") {
+      // Loca8tor only covers Nigeria today. Everywhere else keeps the
+      // simulated flow until a real provider is wired up for that market.
+      let i = 0;
+      const interval = setInterval(() => {
+        i += 1;
+        if (i >= generationSteps.length) {
+          clearInterval(interval);
+          setPostcode(config.generatePostcode());
+          setMode("generated");
+        } else {
+          setGenerationStep(i);
+        }
+      }, 700);
+      return;
+    }
+
+    generateFromLoca8tor();
+  }
+
+  async function generateFromLoca8tor() {
+    try {
+      const { latitude, longitude } = await getCurrentCoordinates();
+      // Skip straight to "resolving" once we have coordinates, there's no
+      // separate step for a real GPS read.
+      setGenerationStep(2);
+      const resolvedPostcode = await resolvePostcodeFromCoordinates(latitude, longitude);
+      setPostcode(resolvedPostcode);
+      setPostcodeLat(latitude);
+      setPostcodeLng(longitude);
+      setMode("generated");
+    } catch (err) {
+      setGenError(err instanceof Error ? err.message : "Couldn't generate your postcode.");
+      setMode("choose");
+    }
+  }
+
+  async function completeSignup() {
     setError(null);
     setSubmitting(true);
+
+    const finalPostcode = mode === "generated" ? postcode : manualPostcode;
     const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        postcode,
-        address_line1: line1,
-        address_line2: line2,
-        city,
-        region,
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/onboarding`,
+        data: {
+          full_name: fullName,
+          phone,
+          country,
+          postcode: finalPostcode,
+          postcode_lat: postcodeLat,
+          postcode_lng: postcodeLng,
+          address_line1: addressLine1,
+          address_line2: addressLine2,
+          city,
+          region,
+        },
       },
     });
+
     setSubmitting(false);
 
     if (error) {
@@ -101,171 +148,281 @@ export function EditAddressForm({
       return;
     }
 
-    setEditing(false);
-    setSaved(true);
+    document.cookie = `${COUNTRY_COOKIE}=${country}; path=/; max-age=31536000`;
+
+    if (!data.session) {
+      setCheckEmail(true);
+      return;
+    }
+
+    router.push("/onboarding");
     router.refresh();
   }
 
-  if (!editing) {
+  if (checkEmail) {
     return (
-      <div className="sm:col-span-2">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Home postcode
-            </p>
-            <p className="mt-1 text-sm text-foreground">{initialPostcode || "Not set"}</p>
-            <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Home address
-            </p>
-            {initialLine1 ? (
-              <p className="mt-1 text-sm text-foreground">
-                {initialLine1}
-                {initialLine2 ? `, ${initialLine2}` : ""}
-                <br />
-                {initialCity}, {initialRegion}
-              </p>
-            ) : (
-              <p className="mt-1 text-sm text-foreground">Not set</p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setSaved(false);
-              setEditing(true);
-            }}
-            className="label-caps shrink-0 text-xs font-semibold text-ink underline decoration-1 underline-offset-4"
-          >
-            Edit
-          </button>
+      <AuthCard title="Check your email" description={undefined}>
+        <div className="border border-border-strong bg-brand-light p-4 text-sm leading-6 text-ink">
+          We sent a confirmation link to <span className="font-semibold">{email}</span>.
+          Follow it to activate your account, then log in.
         </div>
-        {saved && (
-          <p className="mt-3 border border-border-strong bg-brand-light/60 px-3 py-2 text-xs text-ink">
-            Saved.
-          </p>
-        )}
-      </div>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <Link href="/login" className="font-semibold text-ink underline decoration-1 underline-offset-4">
+            Back to log in
+          </Link>
+        </p>
+      </AuthCard>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 border border-border bg-surface-muted p-4 sm:col-span-2">
-      <span className="label-caps text-xs font-semibold text-foreground">Edit home postcode & address</span>
-      <TextField
-        id="edit-line1"
-        label="Address line 1"
-        placeholder="Street address"
-        required
-        value={line1}
-        onChange={(e) => setLine1(e.target.value)}
-      />
-      <TextField
-        id="edit-line2"
-        label="Address line 2 (optional)"
-        placeholder="Apartment, suite, unit"
-        value={line2}
-        onChange={(e) => setLine2(e.target.value)}
-      />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <TextField id="edit-city" label="City / Town" required value={city} onChange={(e) => setCity(e.target.value)} />
-        <TextField
-          id="edit-region"
-          label={config.regionLabel}
-          placeholder={config.regionPlaceholder}
-          required
-          value={region}
-          onChange={(e) => setRegion(e.target.value)}
-        />
+    <AuthCard
+      title={step === "account" ? "Create your WeGive account" : "Set your home location"}
+      description={
+        step === "account"
+          ? "Give and get in your community, it only takes a minute."
+          : undefined
+      }
+      wide
+    >
+      <div className="label-caps mb-6 flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
+        <span className={step === "account" ? "text-ink" : ""}>1. Account</span>
+        <span className="h-px flex-1 bg-border" />
+        <span className={step === "location" ? "text-ink" : ""}>2. Home location</span>
       </div>
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <label htmlFor="edit-postcode" className="label-caps text-xs font-semibold text-foreground">
-            {config.postcodeLabel} <span className="text-accent-dark">*</span>
-          </label>
-          {country === "NG" && (
-            <button
-              type="button"
-              onClick={handleUseCurrentLocation}
-              disabled={locating}
-              className="label-caps text-[11px] font-semibold text-ink underline decoration-1 underline-offset-4 disabled:opacity-60"
-            >
-              {locating ? "Locating…" : "Use my current location"}
-            </button>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <input
-            id="edit-postcode"
-            value={postcode}
-            onChange={(e) => {
-              setPostcode(e.target.value);
-              setPostcodeFromApi(false);
-              setVerifyError(null);
-            }}
-            placeholder={config.postcodePlaceholder}
-            className={`min-w-0 flex-1 border bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink ${
-              postcode.length > 0 && !postcodeIsValid ? "border-warn" : "border-border-strong"
-            }`}
-          />
-          {country === "NG" && !postcodeFromApi && (
-            <button
-              type="button"
-              onClick={handleVerifyPostcode}
-              disabled={verifying || postcode.trim().length === 0}
-              className="label-caps shrink-0 border border-ink px-3 py-2.5 text-xs font-semibold text-ink transition-colors hover:bg-ink hover:text-surface disabled:opacity-60"
-            >
-              {verifying ? "Verifying…" : "Verify"}
-            </button>
-          )}
-        </div>
-        {country === "NG" && postcodeFromApi && (
-          <p className="text-xs text-ink">✓ Verified with Loca8tor.</p>
-        )}
-        {country === "NG" && !postcodeFromApi && postcode.length > 0 && isValidPostcode(postcode, country) && !verifyError && (
-          <p className="text-xs text-muted-foreground">
-            Looks correctly formatted, but Nigerian postcodes must be verified with Loca8tor before saving.
-          </p>
-        )}
-        {postcode.length > 0 && country !== "NG" && !postcodeIsValid && (
-          <p className="text-xs text-warn">
-            Doesn&apos;t look like a valid {config.name} {config.postcodeLabel.toLowerCase()} ({config.postcodePlaceholder}).
-          </p>
-        )}
-        {verifyError && <p className="text-xs text-warn">{verifyError}</p>}
-        {locateError && <p className="text-xs text-warn">{locateError}</p>}
-      </div>
-      {error && (
-        <p className="border border-warn bg-warn-light px-3 py-2.5 text-sm text-warn">{error}</p>
-      )}
-      <div className="flex gap-3">
-        <button
-          type="button"
-          disabled={!canSave || submitting}
-          onClick={handleSave}
-          className="label-caps border border-ink bg-ink px-5 py-2.5 text-xs font-semibold text-surface transition-colors hover:bg-transparent hover:text-ink disabled:opacity-60"
-        >
-          {submitting ? "Saving…" : "Save changes"}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setLine1(initialLine1);
-            setLine2(initialLine2);
-            setCity(initialCity);
-            setRegion(initialRegion);
-            setPostcode(initialPostcode);
-            setPostcodeFromApi(false);
-            setLocateError(null);
-            setVerifyError(null);
-            setError(null);
-            setEditing(false);
+
+      {step === "account" && (
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStep("location");
           }}
-          className="label-caps px-5 py-2.5 text-xs font-semibold text-foreground/70 hover:text-foreground"
         >
-          Cancel
-        </button>
-      </div>
-    </div>
+          <TextField id="fullName" label="Full name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          <TextField id="email" label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <TextField id="phone" label="Phone" type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <TextField id="password" label="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="country" className="label-caps text-xs font-semibold text-foreground">
+              Country <span className="text-accent-dark">*</span>
+            </label>
+            <select
+              id="country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value as CountryCode)}
+              className="border border-border-strong bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink"
+            >
+              {countryList.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name} ({c.currencyCode})
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Sets your currency and postcode format across WeGive.
+            </p>
+          </div>
+          <button
+            type="submit"
+            className="label-caps mt-2 border border-ink bg-ink px-5 py-3.5 text-xs font-semibold text-surface transition-colors hover:bg-transparent hover:text-ink"
+          >
+            Continue
+          </button>
+        </form>
+      )}
+
+      {step === "location" && (
+        <div className="flex flex-col gap-5">
+          <div className="border border-border-strong bg-brand-light p-4 text-sm text-ink">
+            <p className="font-semibold">📍 Important: Use your HOME {config.postcodeLabel.toLowerCase()}.</p>
+            <p className="mt-1 leading-6">
+              Your home {config.postcodeLabel.toLowerCase()} will be used as your
+              default delivery location when you receive items through
+              WeGive.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 border border-border bg-surface-muted p-4">
+            <span className="label-caps text-xs font-semibold text-foreground">Home address</span>
+            <TextField
+              id="addressLine1"
+              label="House / apartment number & street name"
+              placeholder="e.g. 12 Allen Avenue"
+              required
+              value={addressLine1}
+              onChange={(e) => setAddressLine1(e.target.value)}
+            />
+            <TextField
+              id="addressLine2"
+              label="Apartment / unit (optional)"
+              placeholder="e.g. Flat 3B"
+              value={addressLine2}
+              onChange={(e) => setAddressLine2(e.target.value)}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <TextField id="city" label="City" required value={city} onChange={(e) => setCity(e.target.value)} />
+              <TextField
+                id="region"
+                label={config.regionLabel}
+                placeholder={config.regionPlaceholder}
+                required
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Country: {config.name}</p>
+          </div>
+
+          {mode === "choose" && (
+            <div className="flex flex-col gap-3">
+              {genError && (
+                <p className="border border-warn bg-warn-light px-3 py-2.5 text-sm text-warn">
+                  {genError}
+                </p>
+              )}
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => setMode("manual")}
+                  className="label-caps flex-1 border border-ink px-4 py-3.5 text-xs font-semibold text-foreground transition-colors hover:bg-surface-muted"
+                >
+                  Enter Existing {config.postcodeLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={startGenerating}
+                  className="label-caps flex-1 border border-ink bg-ink px-4 py-3.5 text-xs font-semibold text-surface transition-colors hover:bg-transparent hover:text-ink"
+                >
+                  Generate My {config.postcodeLabel}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === "manual" && (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="postcode" className="label-caps text-xs font-semibold text-foreground">
+                  {config.postcodeLabel} <span className="text-accent-dark">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="postcode"
+                    name="postcode"
+                    value={manualPostcode}
+                    onChange={(e) => {
+                      setManualPostcode(e.target.value);
+                      setManualVerified(false);
+                      setManualVerifyError(null);
+                    }}
+                    placeholder={config.postcodePlaceholder}
+                    className={`min-w-0 flex-1 border bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink ${
+                      manualPostcode.length > 0 && country !== "NG" && !manualFormatOk
+                        ? "border-warn"
+                        : "border-border-strong"
+                    }`}
+                  />
+                  {country === "NG" && !manualVerified && (
+                    <button
+                      type="button"
+                      onClick={verifyManualPostcode}
+                      disabled={manualVerifying || manualPostcode.trim().length === 0}
+                      className="label-caps shrink-0 border border-ink px-3 py-2.5 text-xs font-semibold text-ink transition-colors hover:bg-ink hover:text-surface disabled:opacity-60"
+                    >
+                      {manualVerifying ? "Verifying…" : "Verify"}
+                    </button>
+                  )}
+                </div>
+                {country === "NG" && manualVerified && (
+                  <p className="text-xs text-ink">✓ Verified with Loca8tor.</p>
+                )}
+                {country === "NG" && !manualVerified && manualFormatOk && !manualVerifyError && (
+                  <p className="text-xs text-muted-foreground">
+                    Looks correctly formatted, but Nigerian postcodes must be verified with Loca8tor before continuing.
+                  </p>
+                )}
+                {country !== "NG" && manualPostcode.length > 0 && !manualFormatOk && (
+                  <p className="text-xs text-warn">
+                    Doesn&apos;t look like a valid {config.name} {config.postcodeLabel.toLowerCase()} ({config.postcodePlaceholder}).
+                  </p>
+                )}
+                {manualVerifyError && <p className="text-xs text-warn">{manualVerifyError}</p>}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMode("choose")}
+                className="label-caps self-start text-xs font-semibold text-ink underline decoration-1 underline-offset-4"
+              >
+                ← Generate it for me instead
+              </button>
+            </div>
+          )}
+
+          {mode === "generating" && (
+            <div className="flex flex-col items-center gap-3 border border-border py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink border-t-transparent" />
+              <p className="text-sm text-muted-foreground">
+                {generationSteps[generationStep]}
+              </p>
+            </div>
+          )}
+
+          {mode === "generated" && (
+            <div className="flex flex-col items-center gap-3 border border-border-strong bg-brand-light/60 py-8">
+              <p className="label-caps text-xs font-semibold text-ink">
+                Your {config.postcodeLabel.toLowerCase()}
+              </p>
+              <p className="text-2xl font-black tracking-tight text-ink">
+                {postcode}
+              </p>
+            </div>
+          )}
+
+          {((mode === "manual" && manualIsValid) || mode === "generated") && (
+            <>
+              <label className="flex items-start gap-2.5 text-sm text-foreground/80">
+                <input
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={(e) => setConfirmed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 border-border-strong text-ink focus:ring-ink"
+                />
+                I confirm this is my home/current delivery location.
+              </label>
+              {error && (
+                <p className="border border-warn bg-warn-light px-3 py-2.5 text-sm text-warn">
+                  {error}
+                </p>
+              )}
+              {!addressIsValid && (
+                <p className="text-xs text-warn">
+                  Fill in your home address above before creating your account.
+                </p>
+              )}
+              <button
+                type="button"
+                disabled={!confirmed || !addressIsValid || submitting}
+                onClick={completeSignup}
+                className={`label-caps border px-5 py-3.5 text-center text-xs font-semibold transition-colors ${
+                  confirmed && addressIsValid
+                    ? "border-ink bg-ink text-surface hover:bg-transparent hover:text-ink disabled:opacity-60"
+                    : "pointer-events-none border-border bg-surface-muted text-muted-foreground"
+                }`}
+              >
+                {submitting ? "Creating account…" : "Create account"}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link href="/login" className="font-semibold text-ink underline decoration-1 underline-offset-4">
+          Log in
+        </Link>
+      </p>
+    </AuthCard>
   );
 }
