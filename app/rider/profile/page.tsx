@@ -59,9 +59,16 @@ export default async function RiderProfilePage() {
               <span className="text-foreground/80">Country</span>
               <span className="text-foreground">{rider.country}</span>
             </li>
-            <li className="flex items-center justify-between last:border-none">
+            <li className="flex items-center justify-between border-b border-border pb-2.5">
               <span className="text-foreground/80">Applied</span>
               <span className="text-foreground">{new Date(rider.created_at).toLocaleDateString()}</span>
+            </li>
+            <li className="flex items-center justify-between last:border-none">
+              <span className="text-foreground/80">Documents</span>
+              <span className="text-foreground">
+                {rider.id_photo_path ? "ID uploaded" : "No ID uploaded"} · {rider.vehicle_photo_paths.length} vehicle photo
+                {rider.vehicle_photo_paths.length === 1 ? "" : "s"}
+              </span>
             </li>
           </ul>
         </Card>

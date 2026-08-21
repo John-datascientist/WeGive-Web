@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PortalShell } from "@/components/portal-shell";
 import { SimpleTable, StatusBadge } from "@/components/portal-widgets";
 import { adminNav } from "@/lib/portal-nav";
@@ -29,11 +30,18 @@ export default async function AdminVerificationsPage() {
         <p className="text-sm text-muted-foreground">No pending rider applications.</p>
       ) : (
         <SimpleTable
-          columns={["Rider", "Vehicle", "Status"]}
+          columns={["Rider", "Vehicle", "Status", ""]}
           rows={pendingRiders.map((r) => [
             r.user_id.slice(0, 8),
             r.vehicle_type,
             <StatusBadge key="s" label="Pending" tone="warning" />,
+            <Link
+              key="review"
+              href="/admin/riders"
+              className="label-caps text-[11px] font-semibold text-ink underline decoration-1 underline-offset-4"
+            >
+              Review documents
+            </Link>,
           ])}
         />
       )}

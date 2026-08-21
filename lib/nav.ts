@@ -8,6 +8,7 @@ export const primaryNav: NavLink[] = [
   { href: "/browse", label: "Browse" },
   { href: "/business", label: "Business" },
   { href: "/sponsor", label: "Sponsor" },
+  { href: "/become-a-rider", label: "Become a rider" },
   { href: "/how-it-works", label: "How it works" },
 ];
 
