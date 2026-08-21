@@ -11,7 +11,7 @@ export default function MessagesPage() {
       navItems={userNav}
       portalLabel="Your account"
       title="Messages"
-      description="Conversations open only once a claim or active delivery connects you with someone."
+      description="You can only message the rider handling your delivery, never the giver or recipient directly."
     >
       <Card className="grid gap-0 overflow-hidden p-0 sm:grid-cols-[1.1fr_1.4fr]">
         <div className="divide-y divide-border border-b border-border sm:border-b-0 sm:border-r">

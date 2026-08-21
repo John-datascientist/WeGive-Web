@@ -44,9 +44,12 @@ export const categoryEmoji: Record<Category, string> = {
 };
 
 /**
- * Give-to-claim reciprocity: after a user's first claim, they must have
- * given away at least one item before claiming again.
+ * Give-to-claim reciprocity: the first claim is free, then every give
+ * unlocks CLAIMS_PER_GIVE more claims, repeating indefinitely (claim 1,
+ * give 1, claim 2 more, give 1, claim 2 more, ...).
  */
+const CLAIMS_PER_GIVE = 2;
+
 export async function getReciprocityStatus(
   supabase: SupabaseClient,
   userId: string
@@ -58,6 +61,7 @@ export async function getReciprocityStatus(
 
   const claimsMade = claimsResult.count ?? 0;
   const givesMade = givesResult.count ?? 0;
+  const claimsAllowed = 1 + givesMade * CLAIMS_PER_GIVE;
 
-  return { claimsMade, givesMade, canClaimMore: claimsMade === 0 || givesMade > 0 };
+  return { claimsMade, givesMade, canClaimMore: claimsMade < claimsAllowed };
 }

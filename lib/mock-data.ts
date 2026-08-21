@@ -302,19 +302,20 @@ export const notifications: NotificationItem[] = [
   { id: "n-4", category: "Giveaway", message: "Your listing \"3-seater fabric sofa\" was approved.", timeAgo: "2 days ago", read: true },
 ];
 
+// Only riders appear here: givers and recipients never message each other
+// directly, a rider is always the one messaging both sides of a delivery.
 export type Conversation = {
   id: string;
   withName: string;
-  role: "Giver" | "Recipient" | "Rider";
+  role: "Rider";
   lastMessage: string;
   timeAgo: string;
   unread: boolean;
 };
 
 export const conversations: Conversation[] = [
-  { id: "conv-1", withName: "Tunde A.", role: "Giver", lastMessage: "You can pick it up anytime after 4pm.", timeAgo: "9 min ago", unread: true },
-  { id: "conv-2", withName: "Rider: Chidi O.", role: "Rider", lastMessage: "On my way, about 12 minutes out.", timeAgo: "20 min ago", unread: true },
-  { id: "conv-3", withName: "Blessing E.", role: "Recipient", lastMessage: "Thank you so much, item was in great shape!", timeAgo: "4 days ago", unread: false },
+  { id: "conv-1", withName: "Rider: Chidi O.", role: "Rider", lastMessage: "On my way, about 12 minutes out.", timeAgo: "20 min ago", unread: true },
+  { id: "conv-2", withName: "Rider: Femi A.", role: "Rider", lastMessage: "Delivered and confirmed, thanks!", timeAgo: "4 days ago", unread: false },
 ];
 
 // ---- Business portal ----

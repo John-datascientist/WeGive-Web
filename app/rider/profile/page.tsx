@@ -4,6 +4,7 @@ import { Card } from "@/components/ui";
 import { riderNav } from "@/lib/portal-nav";
 import { createClient } from "@/lib/supabase/server";
 import type { Rider } from "@/lib/riders";
+import { average } from "@/lib/reviews";
 
 export const metadata = { title: "Rider profile" };
 
@@ -23,6 +24,18 @@ export default async function RiderProfilePage() {
   const { data: rider } = user
     ? await supabase.from("riders").select("*").eq("user_id", user.id).maybeSingle<Rider>()
     : { data: null };
+
+  let ratingLabel = "No ratings yet";
+  if (rider) {
+    const { data: riderReviews } = await supabase
+      .from("reviews")
+      .select("rider_rating")
+      .eq("rider_id", rider.id)
+      .not("rider_rating", "is", null);
+    const ratings = (riderReviews ?? []).map((r) => r.rider_rating as number);
+    const avg = average(ratings);
+    if (avg !== null) ratingLabel = `${avg.toFixed(1)} ★ (${ratings.length} review${ratings.length === 1 ? "" : "s"})`;
+  }
 
   return (
     <PortalShell
@@ -63,12 +76,16 @@ export default async function RiderProfilePage() {
               <span className="text-foreground/80">Applied</span>
               <span className="text-foreground">{new Date(rider.created_at).toLocaleDateString()}</span>
             </li>
-            <li className="flex items-center justify-between last:border-none">
+            <li className="flex items-center justify-between border-b border-border pb-2.5">
               <span className="text-foreground/80">Documents</span>
               <span className="text-foreground">
                 {rider.id_photo_path ? "ID uploaded" : "No ID uploaded"} · {rider.vehicle_photo_paths.length} vehicle photo
                 {rider.vehicle_photo_paths.length === 1 ? "" : "s"}
               </span>
+            </li>
+            <li className="flex items-center justify-between last:border-none">
+              <span className="text-foreground/80">Rating</span>
+              <span className="text-foreground">{ratingLabel}</span>
             </li>
           </ul>
         </Card>

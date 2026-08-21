@@ -82,9 +82,10 @@ export default function TermsPage() {
             <p>
               Deliveries are carried out by verified riders assigned through
               Loca8tor. Exact pickup and delivery addresses are shared with
-              the relevant parties only once a delivery is confirmed. Rider
-              and recipient can message each other only while a delivery is
-              active.
+              the relevant parties only once a delivery is confirmed. A
+              rider can message the giver and the recipient while a delivery
+              is active; givers and recipients never message each other
+              directly.
             </p>
           ),
         },

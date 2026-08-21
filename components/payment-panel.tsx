@@ -12,12 +12,15 @@ export function PaymentPanel({
   continueHref,
   continueLabel,
   country = "NG",
+  onPaid,
 }: {
   amount: number;
   actionLabel: string;
   continueHref: string;
   continueLabel: string;
   country?: CountryCode;
+  /** Called once payment "completes" (this is still a simulated payment, no real charge happens). */
+  onPaid?: () => void;
 }) {
   const [method, setMethod] = useState<PaymentMethod>("Card");
   const [status, setStatus] = useState<"idle" | "processing" | "held">("idle");
@@ -106,7 +109,10 @@ export function PaymentPanel({
         disabled={status === "processing"}
         onClick={() => {
           setStatus("processing");
-          setTimeout(() => setStatus("held"), 900);
+          setTimeout(() => {
+            setStatus("held");
+            onPaid?.();
+          }, 900);
         }}
         className="label-caps border border-ink bg-ink px-5 py-3.5 text-center text-xs font-semibold text-surface transition-colors hover:bg-transparent hover:text-ink disabled:opacity-60"
       >

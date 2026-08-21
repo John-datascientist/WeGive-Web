@@ -27,6 +27,12 @@ export default async function GiveawayDetailPage({
   const isOwner = user?.id === item.giver_id;
   const canClaim = user ? (await getReciprocityStatus(supabase, user.id)).canClaimMore : true;
 
+  const { data: review } = await supabase
+    .from("reviews")
+    .select("product_rating, product_review")
+    .eq("giveaway_id", item.id)
+    .maybeSingle();
+
   return (
     <div className="container-page py-14 sm:py-20">
       <BackButton label="Back to browse" className="mb-6" />
@@ -60,6 +66,15 @@ export default async function GiveawayDetailPage({
             </div>
           </dl>
         </Card>
+        {review && (
+          <Card>
+            <h3 className="text-sm font-semibold text-foreground">Review</h3>
+            <p className="mt-1 text-btn-amber">{"★".repeat(review.product_rating)}{"☆".repeat(5 - review.product_rating)}</p>
+            {review.product_review && (
+              <p className="mt-2 text-sm text-muted-foreground">{review.product_review}</p>
+            )}
+          </Card>
+        )}
         <Card>
           <h3 className="text-sm font-semibold text-foreground">Lifecycle</h3>
           <div className="mt-3 flex flex-wrap gap-2">

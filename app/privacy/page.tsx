@@ -68,12 +68,9 @@ export default function PrivacyPage() {
           body: (
             <ul className="flex flex-col gap-2">
               <li>
-                • A giver and recipient can message each other only after a
-                claim exists.
-              </li>
-              <li>
-                • A rider and recipient can message each other only during an
-                active delivery.
+                • Givers and recipients never message each other directly.
+                A rider can message the giver and the recipient, but only
+                during an active delivery.
               </li>
               <li>
                 • Sponsors see the item, area and amount still needed, never

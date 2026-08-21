@@ -124,7 +124,8 @@ further needs, roughly in order:
    distance/routing, and live tracking, consumed via Loca8tor's public
    API, not its database.
 5. Notifications (in-app first, then email/SMS/push) and scoped messaging
-   (giver↔recipient after a claim; rider↔recipient during active delivery).
+   (rider↔giver and rider↔recipient during active delivery only, givers and
+   recipients never message each other directly).
 6. Admin configuration (categories, verification requirements, pricing,
    reservation duration, claim limits) and audit logging for every admin
    action (who, what, when, previous/new value).

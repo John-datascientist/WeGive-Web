@@ -23,9 +23,9 @@ const sections = [
   {
     heading: "Controlled messaging",
     items: [
-      "Giver and recipient can only message after a claim exists",
-      "Rider and recipient can only message during an active delivery",
-      "Messages are scoped to that one exchange, not open direct messaging",
+      "Givers and recipients never message each other directly, on WeeGive there's always a rider in between",
+      "A rider can message the giver and the recipient only during an active delivery",
+      "Messages are scoped to that one delivery, not open direct messaging",
     ],
   },
   {

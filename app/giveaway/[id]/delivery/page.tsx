@@ -1,11 +1,10 @@
 import { Card, Eyebrow } from "@/components/ui";
 import { BackButton } from "@/components/back-button";
-import { PaymentPanel } from "@/components/payment-panel";
-import { ShareSponsorLink } from "@/components/share-sponsor-link";
-import { AddressFields, type ProfileAddress } from "@/components/address-fields";
+import { type ProfileAddress } from "@/components/address-fields";
 import { formatCurrency } from "@/lib/location";
 import { getSelectedCountry } from "@/lib/location-server";
 import { createClient } from "@/lib/supabase/server";
+import { DeliveryFlow } from "./delivery-flow";
 
 const breakdown = {
   distanceKm: 8.7,
@@ -97,47 +96,15 @@ export default async function GiveawayDeliveryPage({
           </div>
         </Card>
 
-        <div className="mt-6">
-          <AddressFields
-            country={country}
-            idPrefix="delivery"
-            heading="Delivery address"
-            helperText="Where should this be delivered? Your exact address is shared only with the assigned rider, once delivery is confirmed."
-            profileAddress={profileAddress}
-          />
-        </div>
+        <DeliveryFlow
+          giveawayId={id}
+          country={country}
+          coversDelivery={!!item?.covers_delivery}
+          profileAddress={profileAddress}
+          total={total}
+          youPay={youPay}
+        />
 
-        {item?.covers_delivery ? (
-          <div className="mt-6 border border-border-strong bg-brand-light/60 p-6 text-center">
-            <p className="text-3xl">🚚</p>
-            <p className="mt-3 text-sm font-semibold text-ink">
-              Delivery is free: covered by the giver
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              The giver committed to covering delivery when they listed this
-              item. We&apos;ll charge them {formatCurrency(total, country)} now that the
-              fee is calculated. You pay nothing.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="mt-6">
-              <PaymentPanel
-                amount={youPay}
-                actionLabel="Pay"
-                continueHref="/my-deliveries"
-                continueLabel="Go to my deliveries"
-                country={country}
-              />
-            </div>
-            <p className="mt-6 text-center text-xs font-semibold text-muted-foreground">
-              or
-            </p>
-            <div className="mt-3">
-              <ShareSponsorLink giveawayId={id} />
-            </div>
-          </>
-        )}
         <p className="mt-3 text-center text-xs text-muted-foreground">
           Prices are calculated and verified server-side, never trusted from
           the browser.

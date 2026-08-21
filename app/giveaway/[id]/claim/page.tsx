@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Card, Eyebrow, ButtonLink } from "@/components/ui";
 import { BackButton } from "@/components/back-button";
 import { createClient } from "@/lib/supabase/client";
+import { getReciprocityStatus } from "@/lib/giveaways";
 
 function formatCountdown(msRemaining: number): string {
   const totalSeconds = Math.max(0, Math.floor(msRemaining / 1000));
@@ -74,6 +75,15 @@ export default function ClaimPage() {
       if (giveaway.giver_id === user.id) {
         if (!cancelled) {
           setError("You can't claim your own giveaway.");
+          setStatus("error");
+        }
+        return;
+      }
+
+      const reciprocity = await getReciprocityStatus(supabase, user.id);
+      if (!reciprocity.canClaimMore) {
+        if (!cancelled) {
+          setError("You've reached your claim limit. List a giveaway of your own to unlock more claims.");
           setStatus("error");
         }
         return;
