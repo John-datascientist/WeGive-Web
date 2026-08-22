@@ -11,6 +11,8 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="giveaway/[id]/index" />
+          <Stack.Screen name="giveaway/[id]/claim" />
         </Stack>
         <StatusBar style="dark" />
       </AuthProvider>
